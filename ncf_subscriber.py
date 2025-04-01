@@ -1,6 +1,10 @@
 import websocket
 from ncf_frame import NcfFrame
 import threading
+import time
+
+MIN_RECONNECT_DELAY = 1
+MAX_RECONNECT_DELAY = 30
 
 def _send(socket, message):
     if socket and socket.sock and socket.sock.connected:
@@ -11,8 +15,10 @@ def _send(socket, message):
 
 class NcfSubscriber:
     def __init__(self, path, destination):
+        self.reconnect_delay = MIN_RECONNECT_DELAY
         self.path = path
         self.destination = destination
+        self.socket = None
         self.on_message = lambda subscriber, frame: None
         self.on_subscribe_success = lambda subscriber, frame: None
         self.on_subscribe_faild = lambda subscriber, frame: None
@@ -21,13 +27,26 @@ class NcfSubscriber:
         self.on_error = lambda subscriber, error: None
 
     def connect(self):
+        print('trying to connect websocket')
         self.socket = websocket.WebSocketApp(self.path)
-        self.socket.on_open = lambda _: self.on_open(self)
+
+        def on_open(ws):
+            print('websocket is open')
+            self.reconnect_delay = MIN_RECONNECT_DELAY
+            self.on_open(self);
+        
         def on_close(ws, status, msg):
+            print('websocket is closed')
             self.on_close(self, status, msg)
-            self.connect()
-        self.socket.on_close = on_close
-        self.socket.on_error = lambda _, error: self.on_error(self, error)
+
+            def reconnect():
+                print(f'reconnect after {self.reconnect_delay} seconds...')
+                time.sleep(self.reconnect_delay)
+                self.reconnect_delay = min(self.reconnect_delay * 2, MAX_RECONNECT_DELAY)
+                self.connect()
+
+            threading.Thread(target=reconnect, daemon=True).start()
+
         def on_receive(ws, raw_frame):
             frame = NcfFrame.parse(raw_frame)
             match frame.command:
@@ -37,7 +56,12 @@ class NcfSubscriber:
                     self.on_subscribe_success(self, frame)
                 case 'SUBSCRIBE_FAILD':
                     self.on_subscribe_faild(self, frame)
+
+        self.socket.on_open = on_open
+        self.socket.on_close = on_close
+        self.socket.on_error = lambda _, error: self.on_error(self, error)
         self.socket.on_message = on_receive
+
         threading.Thread(target=self.socket.run_forever, daemon=True).start()
 
     def subscribe(self):
