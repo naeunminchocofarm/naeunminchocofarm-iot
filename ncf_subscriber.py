@@ -63,12 +63,21 @@ class NcfSubscriber:
         self.socket.on_message = on_receive
 
         threading.Thread(target=self.socket.run_forever, daemon=True).start()
+    
+    def close(self):
+        if self.socket and self.socket.sock and self.socket.sock.connected:
+            self.socket.sock.close()
 
     def subscribe(self):
         frame = NcfFrame.createSubscribe(self.destination)
+        _send(self.socket, str(frame))
+    
+    def unsubscribe(self):
+        frame = NcfFrame.createUnsubscribe(self.destination)
         _send(self.socket, str(frame))
 
     def send(self, headers = {}, body = ''):
         headers['destination'] = self.destination
         frame = NcfFrame.createSend(headers, body)
         _send(self.socket, str(frame))
+
