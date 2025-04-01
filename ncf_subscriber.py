@@ -27,6 +27,9 @@ class NcfSubscriber:
         self.on_error = lambda subscriber, error: None
 
     def connect(self):
+        threading.Thread(target=self.run_forever, daemon=True).start()
+        
+    def run_forever(self):
         print('trying to connect websocket')
         self.socket = websocket.WebSocketApp(self.path)
 
@@ -39,13 +42,13 @@ class NcfSubscriber:
             print('websocket is closed')
             self.on_close(self, status, msg)
 
-            def reconnect():
+            def rerun_forever():
                 print(f'reconnect after {self.reconnect_delay} seconds...')
                 time.sleep(self.reconnect_delay)
                 self.reconnect_delay = min(self.reconnect_delay * 2, MAX_RECONNECT_DELAY)
-                self.connect()
+                self.run_forever()
 
-            threading.Thread(target=reconnect, daemon=True).start()
+            rerun_forever()
 
         def on_receive(ws, raw_frame):
             frame = NcfFrame.parse(raw_frame)
@@ -61,8 +64,8 @@ class NcfSubscriber:
         self.socket.on_close = on_close
         self.socket.on_error = lambda _, error: self.on_error(self, error)
         self.socket.on_message = on_receive
-
-        threading.Thread(target=self.socket.run_forever, daemon=True).start()
+        
+        self.socket.run_forever()
     
     def close(self):
         if self.socket and self.socket.sock and self.socket.sock.connected:
@@ -80,4 +83,3 @@ class NcfSubscriber:
         headers['destination'] = self.destination
         frame = NcfFrame.createSend(headers, body)
         _send(self.socket, str(frame))
-
