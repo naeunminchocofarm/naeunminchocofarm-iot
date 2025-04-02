@@ -11,7 +11,7 @@ def init_sensor():
     GPIO.setup(SENSOR, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 def create_subscriber():
-    return NcfSubscriber(WEB_SOCKET_PATHS['dev'], DESTINATIONS['motion'])
+    return NcfSubscriber(WEB_SOCKET_PATHS['production'], DESTINATIONS['motion'])
 
 def send_detect_message(subs):
     subs.send(body='detected')
@@ -37,6 +37,9 @@ def run():
                 detected_count = 0
     except KeyboardInterrupt:
         print('Stopped by User')
+    except:
+        print('error!')
+    finally:
         GPIO.cleanup()
         
 run()
