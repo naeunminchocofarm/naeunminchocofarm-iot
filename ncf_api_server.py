@@ -26,3 +26,17 @@ class NcfApiServer:
             "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
         }
         requests.post(f"{API_SERVER_PATH}/ldr-values", data=payload)
+
+    def insertSoilMoistureValue(self, value):
+        payload = {
+            "soil-moisture-value": value,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f"{API_SERVER_PATH}/soil-moisture-values", data=payload)
+    
+    def insertHumidity(self, humidity_percentage):
+        payload = {
+            "humidity-percentage": humidity_percentage,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f"{API_SERVER_PATH}/humidities", data=payload)

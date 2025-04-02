@@ -1,7 +1,5 @@
 import spidev
 
-LDR_CHANNEL = 0
-
 spi = spidev.SpiDev()
 spi.open(0, 0)
 spi.max_speed_hz = 100000
@@ -16,7 +14,7 @@ def readadc(adcnum):
 class Adc:
     def __init__(self):
         None
-        
-    def read_ldr_value(self):
-        return readadc(LDR_CHANNEL)
+    
+    def read_channel(self, channel):
+        return readadc(channel)
         
