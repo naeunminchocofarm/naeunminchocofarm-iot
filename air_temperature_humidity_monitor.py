@@ -1,7 +1,5 @@
-import time
 import board
 import adafruit_dht
-import RPi.GPIO as GPIO
 from ncf_api_server import NcfApiServer
 
 dhtDevice = adafruit_dht.DHT22(board.D27)

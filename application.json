@@ -1,0 +1,23 @@
+{
+  "name": "smartfarm_controller_id_1",
+  "crops": [
+    {
+      "name": "lettuce",
+      "sections": [
+        {
+          "name": "section_1",
+          "sensors": [
+            {
+              "name": "sensor_1",
+              "model": "DHT22",
+              "target": "air_temperature_humidity",
+              "config": {
+                "gpio": 27
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
