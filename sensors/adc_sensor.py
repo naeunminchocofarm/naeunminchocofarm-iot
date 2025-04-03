@@ -21,7 +21,6 @@ class AdcSensor(Sensor):
 
   def exit(self):
     self.stop_interval_event.set()
-    self.interval_thread.join()
 
   def rerun(self):
     pass
@@ -38,12 +37,14 @@ class AdcSensor(Sensor):
     if not self.enabled_sunshine:
       return
     sunshine_value = self.adc.read_channel(self.sunshine_channel)
+    print('Sunshine: {}'.format(sunshine_value))
     api_server.insert_sunshine_value(sunshine_value, self.farm_name, self.crops_name, self.section_name, self.name)
 
   def _api_soil_moisture_value(self, api_server):
     if not self.enabled_soil_moisture:
       return
     soil_moisture_value = self.adc.read_channel(self.soil_moisture_channel)
+    print('Soil moisture: {}'.format(soil_moisture_value))
     api_server.insert_soil_moisture_value(soil_moisture_value, self.farm_name, self.crops_name, self.section_name, self.name)
 
   def _get_enable_sunshine(self):

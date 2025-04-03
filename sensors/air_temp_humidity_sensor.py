@@ -35,8 +35,6 @@ class AirTemperatureHumiditySensor(Sensor):
   def exit(self):
     self.dhtDevice.exit()
     self.stop_interval_event.set()
-    if self.interval_thread:
-      self.interval_thread.join()
 
   def _createDhtDevice(self):
     pin_num = self.config.get('gpio', None)
