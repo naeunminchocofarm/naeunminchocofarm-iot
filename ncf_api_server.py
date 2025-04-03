@@ -40,3 +40,47 @@ class NcfApiServer:
             "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
         }
         requests.post(f"{API_SERVER_PATH}/humidities", data=payload)
+
+    def insert_air_temperature(self, temperature_c, farm_name, crops_name, section_name, sensor_name):
+        payload = {
+            'temperature-c': temperature_c,
+            'sensor-name': sensor_name,
+            'section-name': section_name,
+            'crops-name': crops_name,
+            'farm-name': farm_name,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f'{TEST_API_SERVER_PATH}/air-temperatures/v2', data=payload)
+
+    def insert_humidity(self, humidity_percentage, farm_name, crops_name, section_name, sensor_name):
+        payload = {
+            'humidity-percentage': humidity_percentage,
+            'sensor-name': sensor_name,
+            'section-name': section_name,
+            'crops-name': crops_name,
+            'farm-name': farm_name,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f'{TEST_API_SERVER_PATH}/humidities/v2', data=payload)
+
+    def insert_sunshine_value(self, sunshine_value, farm_name, crops_name, section_name, sensor_name):
+        payload = {
+            'sunshine-value': sunshine_value,
+            'farm-name': farm_name,
+            'crops-name': crops_name,
+            'section-name': section_name,
+            'sensor-name': sensor_name,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f'{TEST_API_SERVER_PATH}/sunshines/v2', data=payload)
+
+    def insert_soil_moisture_value(self, soil_moisture_value, farm_name, crops_name, section_name, sensor_name):
+        payload = {
+            'soil-moisture-value': soil_moisture_value,
+            'farm-name': farm_name,
+            'crops-name': crops_name,
+            'section-name': section_name,
+            'sensor-name': sensor_name,
+            "measured-at": datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+        }
+        requests.post(f'{TEST_API_SERVER_PATH}/soil-moistures/v2', data=payload)

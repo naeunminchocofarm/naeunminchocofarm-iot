@@ -25,7 +25,7 @@ class Application:
   def __init__(self):
     config = Application.__read_config()
     self.name = Application.__get_name(config)
-    self.crops  = Application.__get_crops(config)
+    self.crops  = Application._create_crops(self.name, config)
 
   def run(self):
     _run_children(self.crops)
@@ -51,16 +51,17 @@ class Application:
     return result
     
   @staticmethod
-  def __get_crops(config = {}):
+  def _create_crops(farm_name, config = {}):
     result = config.get(KEY_CROPS, [])
-    result = map(lambda x: Crop(x), result)
+    result = map(lambda x: Crop(farm_name, x), result)
     result = list(result)
     return result
 
 class Crop:
-  def __init__(self, dict):
-    self.name = Crop.__get_name(dict)
-    self.sections = Crop.__get_sections(dict)
+  def __init__(self, farm_name, config):
+    self.farm_name = farm_name
+    self.name = Crop.__get_name(config)
+    self.sections = Crop._create_sections(farm_name, self.name, config)
 
   def run(self):
     _run_children(self.sections)
@@ -79,18 +80,20 @@ class Crop:
     return result
   
   @staticmethod
-  def __get_sections(dict = {}):
-    result = dict.get(KEY_SECTIONS, [])
-    result = map(lambda x: Section(x), result)
+  def _create_sections(farm_name, crops_name, config = {}):
+    result = config.get(KEY_SECTIONS, [])
+    result = map(lambda x: Section(farm_name, crops_name, x), result)
     result = list(result)
     return result
 
 from sensors.sensor_factory import SensorFactory
 
 class Section:
-  def __init__(self, dict):
-    self.name = Section.__get_name(dict)
-    self.sensors = Section.__get_sensors(dict)
+  def __init__(self, farm_name, crops_name, config):
+    self.farm_name = farm_name
+    self.crops_name = crops_name
+    self.name = Section.__get_name(config)
+    self.sensors = Section._create_sensors(farm_name, crops_name, self.name, config)
 
   def run(self):
     _run_children(self.sensors)
@@ -109,8 +112,8 @@ class Section:
     return result
   
   @staticmethod
-  def __get_sensors(dict = {}):
-    result = dict.get(KEY_SENSORS, [])
-    result = map(SensorFactory.create_from_config, result)
+  def _create_sensors(farm_name, crops_name, section_name, config = {}):
+    result = config.get(KEY_SENSORS, [])
+    result = map(lambda x: SensorFactory.create_from_config(farm_name, crops_name, section_name, x), result)
     result = list(result)
     return result

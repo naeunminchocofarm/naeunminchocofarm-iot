@@ -1,5 +1,8 @@
 class Sensor:
-  def __init__(self, config):
+  def __init__(self, farm_name, crops_name, section_name, config):
+    self.farm_name = farm_name
+    self.crops_name = crops_name
+    self.section_name = section_name
     self.name = Sensor.__get_name(config)
     self.target = Sensor.__get_target(config)
     self.config = Sensor.__get_config(config)
