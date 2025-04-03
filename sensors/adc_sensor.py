@@ -21,6 +21,7 @@ class AdcSensor(Sensor):
 
   def exit(self):
     self.stop_interval_event.set()
+    self.interval_thread.join()
 
   def rerun(self):
     pass
