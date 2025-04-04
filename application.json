@@ -33,7 +33,8 @@
               "model": "PIR",
               "target": "motion detecting",
               "config": {
-                "realtimeSeconds": 1
+                "realtimeSeconds": 1,
+                "gpio": 17
               }
             }
           ]

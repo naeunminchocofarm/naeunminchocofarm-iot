@@ -25,6 +25,7 @@ class NcfSubscriber:
         self.on_open = lambda subscriber: None
         self.on_close = lambda subscriber, close_status_code, close_msg: None
         self.on_error = lambda subscriber, error: None
+        self._is_closed = False
 
     def connect(self):
         threading.Thread(target=self.run_forever, daemon=True).start()
@@ -48,7 +49,8 @@ class NcfSubscriber:
                 self.reconnect_delay = min(self.reconnect_delay * 2, MAX_RECONNECT_DELAY)
                 self.run_forever()
 
-            rerun_forever()
+            if not self._is_closed:
+                rerun_forever()
 
         def on_receive(ws, raw_frame):
             frame = NcfFrame.parse(raw_frame)
@@ -69,6 +71,7 @@ class NcfSubscriber:
     
     def close(self):
         if self.socket and self.socket.sock and self.socket.sock.connected:
+            self._is_closed = True
             self.socket.sock.close()
 
     def subscribe(self):

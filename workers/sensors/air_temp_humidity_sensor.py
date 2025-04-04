@@ -29,6 +29,9 @@ class AirTemperatureHumiditySensor(Sensor):
     except RuntimeError as e:
       print(type(e))
       print(e)
+    except TypeError as e:
+      print(type(e))
+      print(e)
 
   def exit(self):
     self.dhtDevice.exit()
