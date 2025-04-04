@@ -1,5 +1,6 @@
 from .air_temp_humidity_sensor import AirTemperatureHumiditySensor
 from .adc_sensor import AdcSensor
+from .pir_sensor import PirSensor
 
 class SensorFactory:
   def __init__(self):
@@ -13,6 +14,8 @@ class SensorFactory:
         return AirTemperatureHumiditySensor(farm_name, crops_name, section_name, config)
       case "ADC": 
         return AdcSensor(farm_name, crops_name, section_name, config)
+      case "PIR":
+        return PirSensor(farm_name, crops_name, section_name, config)
       case _:
         raise TypeError('Unusable model.')
       

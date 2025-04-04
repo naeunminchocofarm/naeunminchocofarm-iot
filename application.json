@@ -27,6 +27,14 @@
                 "soilMoistureChannel": 1,
                 "intervalSeconds": 600
               }
+            },
+            {
+              "name": "sensor_3",
+              "model": "PIR",
+              "target": "motion detecting",
+              "config": {
+                "realtimeSeconds": 1
+              }
             }
           ]
         }
