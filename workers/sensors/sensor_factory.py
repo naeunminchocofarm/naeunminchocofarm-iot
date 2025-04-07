@@ -7,15 +7,15 @@ class SensorFactory:
     pass
 
   @staticmethod
-  def create_from_config(farm_name, crops_name, section_name, config):
+  def create_from_config(uuid, crops_name, section_name, config):
     model = SensorFactory._get_model(config)
     match model:
       case "DHT22":
-        return AirTemperatureHumiditySensor(farm_name, crops_name, section_name, config)
+        return AirTemperatureHumiditySensor(uuid, crops_name, section_name, config)
       case "ADC": 
-        return AdcSensor(farm_name, crops_name, section_name, config)
+        return AdcSensor(uuid, crops_name, section_name, config)
       case "PIR":
-        return PirSensor(farm_name, crops_name, section_name, config)
+        return PirSensor(uuid, crops_name, section_name, config)
       case _:
         raise TypeError('Unusable model.')
       

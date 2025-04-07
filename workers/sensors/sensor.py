@@ -1,9 +1,9 @@
 from workers.worker import Worker
 
 class Sensor(Worker):
-  def __init__(self, farm_name, crops_name, section_name, config):
+  def __init__(self, uuid, crops_name, section_name, config):
     super().__init__()
-    self.farm_name = farm_name
+    self.uuid = uuid
     self.crops_name = crops_name
     self.section_name = section_name
     self.name = Sensor.__get_name(config)
@@ -31,7 +31,7 @@ class Sensor(Worker):
   
   def get_position(self):
     position = {
-      'farm-name': self.farm_name,
+      'farm-uuid': self.uuid,
       'crops-name': self.crops_name,
       'section-name': self.section_name,
       'sensor-name': self.name

@@ -5,8 +5,8 @@ import datetime
 import requests
 
 class AdcSensor(Sensor):
-  def __init__(self, farm_name, crops_name, section_name, config):
-    super().__init__(farm_name, crops_name, section_name, config)
+  def __init__(self, uuid, crops_name, section_name, config):
+    super().__init__(uuid, crops_name, section_name, config)
     self.adc = Adc()
     self.enabled_sunshine = self._get_enable_sunshine()
     self.sunshine_channel = self._get_sunshine_channel()

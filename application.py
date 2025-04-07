@@ -9,10 +9,7 @@ def _run_children(children = []):
     try:
       child.run()
     except:
-      try:
-        child.rerun()
-      except:
-        continue
+      continue
 
 def _exit_children(children = []):
   for child in children:
@@ -24,15 +21,11 @@ def _exit_children(children = []):
 class Application:
   def __init__(self):
     config = Application.__read_config()
-    self.name = Application.__get_name(config)
-    self.crops  = Application._create_crops(config)
     self.uuid = Application._get_uuid(config)
+    self.crops  = Application._create_crops(self.uuid, config)
 
   def run(self):
     _run_children(self.crops)
-
-  def rerun(self):
-    pass
 
   def exit(self):
     _exit_children(self.crops)
@@ -45,16 +38,9 @@ class Application:
     return result
 
   @staticmethod
-  def __get_name(config = {}):
-    result =  config.get(KEY_NAME, None)
-    if result is None:
-      raise TypeError('application name cannot be empty.')
-    return result
-    
-  @staticmethod
-  def _create_crops(farm_name, config = {}):
+  def _create_crops(uuid, config = {}):
     result = config.get(KEY_CROPS, [])
-    result = map(lambda x: Crop(farm_name, x), result)
+    result = map(lambda x: Crop(uuid, x), result)
     result = list(result)
     return result
   
@@ -66,10 +52,9 @@ class Application:
     return result
 
 class Crop:
-  def __init__(self, farm_name, config):
-    self.farm_name = farm_name
+  def __init__(self, uuid, config):
     self.name = Crop._get_name(config)
-    self.sections = Crop._create_sections(farm_name, self.name, config)
+    self.sections = Crop._create_sections(uuid, self.name, config)
 
   def run(self):
     _run_children(self.sections)
@@ -88,9 +73,9 @@ class Crop:
     return result
   
   @staticmethod
-  def _create_sections(farm_name, crops_name, config = {}):
+  def _create_sections(uuid, crops_name, config = {}):
     result = config.get(KEY_SECTIONS, [])
-    result = map(lambda x: Section(farm_name, crops_name, x), result)
+    result = map(lambda x: Section(uuid, crops_name, x), result)
     result = list(result)
     return result
   
@@ -99,11 +84,10 @@ import threading
 import time
 
 class Section:
-  def __init__(self, farm_name, crops_name, config):
-    self.farm_name = farm_name
+  def __init__(self, uuid, crops_name, config):
     self.crops_name = crops_name
     self.name = Section.__get_name(config)
-    self.sensors = Section._create_sensors(farm_name, crops_name, self.name, config)
+    self.sensors = Section._create_sensors(uuid, crops_name, self.name, config)
     self.stop_event = threading.Event()
 
   def run(self):
@@ -125,7 +109,6 @@ class Section:
     self.threads = threads
     for thread in threads:
       thread.start()
-    # _run_children(self.sensors)
 
   def rerun(self):
     pass
@@ -134,7 +117,6 @@ class Section:
     self.stop_event.set()
     for thread in self.threads:
       thread.join()
-    # _exit_children(self.sensors)
 
   @staticmethod
   def __get_name(dict = {}):
@@ -144,8 +126,8 @@ class Section:
     return result
   
   @staticmethod
-  def _create_sensors(farm_name, crops_name, section_name, config = {}):
+  def _create_sensors(uuid, crops_name, section_name, config = {}):
     result = config.get(KEY_SENSORS, [])
-    result = map(lambda x: SensorFactory.create_from_config(farm_name, crops_name, section_name, x), result)
+    result = map(lambda x: SensorFactory.create_from_config(uuid, crops_name, section_name, x), result)
     result = list(result)
     return result
