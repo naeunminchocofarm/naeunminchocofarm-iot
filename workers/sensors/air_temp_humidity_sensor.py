@@ -3,6 +3,7 @@ from ncf_api_server import NcfApiServer
 import board
 import adafruit_dht
 import datetime
+import requests
 
 class AirTemperatureHumiditySensor(Sensor):
   def __init__(self, farm_name, crops_name, section_name, config):
@@ -32,6 +33,10 @@ class AirTemperatureHumiditySensor(Sensor):
     except TypeError as e:
       print(type(e))
       print(e)
+    except requests.exceptions.ConnectionError as e:
+      print(type(e))
+      print(e)
+      self.exec_datetime = now + datetime.timedelta(seconds=self.interval_seconds)
 
   def exit(self):
     self.dhtDevice.exit()

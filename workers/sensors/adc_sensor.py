@@ -2,6 +2,7 @@ from .sensor import Sensor
 from ncf_api_server import NcfApiServer
 from adc import Adc
 import datetime
+import requests
 
 class AdcSensor(Sensor):
   def __init__(self, farm_name, crops_name, section_name, config):
@@ -22,9 +23,14 @@ class AdcSensor(Sensor):
     if now < self.exec_datetime:
       return
     
-    self.exec_datetime = now + datetime.timedelta(seconds=self.interval_seconds)
-    self._api_sunshine_value()
-    self._api_soil_moisture_value()
+    try:
+      self._api_sunshine_value()
+      self._api_soil_moisture_value()
+    except requests.exceptions.ConnectionError as e:
+      print(type(e))
+      print(e)
+    finally:
+      self.exec_datetime = now + datetime.timedelta(seconds=self.interval_seconds)
 
   def exit(self):
     pass
