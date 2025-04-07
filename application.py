@@ -26,6 +26,7 @@ class Application:
     config = Application.__read_config()
     self.name = Application.__get_name(config)
     self.crops  = Application._create_crops(config)
+    self.uuid = Application._get_uuid(config)
 
   def run(self):
     _run_children(self.crops)
@@ -55,6 +56,13 @@ class Application:
     result = config.get(KEY_CROPS, [])
     result = map(lambda x: Crop(farm_name, x), result)
     result = list(result)
+    return result
+  
+  @staticmethod
+  def _get_uuid(config = {}):
+    result = config.get("uuid", None)
+    if result is None:
+      raise TypeError('application uuid cannot be empty.')
     return result
 
 class Crop:
