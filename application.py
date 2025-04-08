@@ -22,13 +22,13 @@ class Application:
   def __init__(self):
     config = Application.__read_config()
     self.uuid = Application._get_uuid(config)
-    self.crops  = Application._create_crops(config)
+    self.sections = Application._create_sections(config)
 
   def run(self):
-    _run_children(self.crops)
+    _run_children(self.sections)
 
   def exit(self):
-    _exit_children(self.crops)
+    _exit_children(self.sections)
 
   @staticmethod
   def __read_config():
@@ -38,47 +38,19 @@ class Application:
     return result
 
   @staticmethod
-  def _create_crops(config = {}):
-    result = config.get(KEY_CROPS, [])
-    result = map(lambda x: Crop(x), result)
-    result = list(result)
-    return result
-  
-  @staticmethod
   def _get_uuid(config = {}):
     result = config.get("uuid", None)
     if result is None:
       raise TypeError('application uuid cannot be empty.')
     return result
-
-class Crop:
-  def __init__(self, config):
-    self.name = Crop._get_name(config)
-    self.sections = Crop._create_sections(config)
-
-  def run(self):
-    _run_children(self.sections)
-
-  def rerun(self):
-    pass
-
-  def exit(self):
-    _exit_children(self.sections)
-  
-  @staticmethod
-  def _get_name(dict = {}):
-    result = dict.get(KEY_NAME, None)
-    if result is None:
-      raise TypeError('crop name cannot be empty.')
-    return result
   
   @staticmethod
   def _create_sections(config = {}):
-    result = config.get(KEY_SECTIONS, [])
+    result = config.get("sections", [])
     result = map(lambda x: Section(x), result)
     result = list(result)
     return result
-  
+
 from workers.sensors.sensor_factory import SensorFactory
 import threading
 import time

@@ -1,47 +1,41 @@
 {
   "uuid": "0bbd8aa9-02af-4dc6-af0e-c1c5aaa45790",
-  "crops": [
+  "sections": [
     {
-      "name": "lettuce",
-      "uuid": "e32d43ff-f19a-47a7-8dc9-f8e7bd76223c",
-      "sections": [
+      "name": "section_1",
+      "uuid": "1d8c6420-7247-4dcb-b673-4d9ba84c6274",
+      "sensors": [
         {
-          "name": "section_1",
-          "uuid": "1d8c6420-7247-4dcb-b673-4d9ba84c6274",
-          "sensors": [
-            {
-              "name": "sensor_1",
-              "uuid": "9ed5288c-ac2c-4cdd-a88e-6f17b64d2e95",
-              "model": "DHT22",
-              "target": "air_temperature_humidity",
-              "config": {
-                "gpio": 27,
-                "intervalSeconds": 60
-              }
-            },
-            {
-              "name": "sensor_2",
-              "uuid": "988ec2af-a314-47d7-b7d4-53f489d5c6c3",
-              "model": "ADC",
-              "target": "sunshine and soil moisture",
-              "config": {
-                "enableSunshine": true,
-                "sunshineChannel": 0,
-                "enableSoilMoisture": true,
-                "soilMoistureChannel": 1,
-                "intervalSeconds": 60
-              }
-            },
-            {
-              "name": "sensor_3",
-              "uuid": "664d3be1-f506-465a-8a4b-57b8d978c24d",
-              "model": "PIR",
-              "target": "motion detecting",
-              "config": {
-                "gpio": 17
-              }
-            }
-          ]
+          "name": "sensor_1",
+          "uuid": "9ed5288c-ac2c-4cdd-a88e-6f17b64d2e95",
+          "model": "DHT22",
+          "target": "air_temperature_humidity",
+          "config": {
+            "gpio": 27,
+            "intervalSeconds": 60
+          }
+        },
+        {
+          "name": "sensor_2",
+          "uuid": "988ec2af-a314-47d7-b7d4-53f489d5c6c3",
+          "model": "ADC",
+          "target": "sunshine and soil moisture",
+          "config": {
+            "enableSunshine": true,
+            "sunshineChannel": 0,
+            "enableSoilMoisture": true,
+            "soilMoistureChannel": 1,
+            "intervalSeconds": 60
+          }
+        },
+        {
+          "name": "sensor_3",
+          "uuid": "664d3be1-f506-465a-8a4b-57b8d978c24d",
+          "model": "PIR",
+          "target": "motion detecting",
+          "config": {
+            "gpio": 17
+          }
         }
       ]
     }
