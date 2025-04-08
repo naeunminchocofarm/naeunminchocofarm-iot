@@ -35,30 +35,12 @@ class AdcSensor(Sensor):
   def exit(self):
     pass
 
-  # use "_api_sunshine_value_v2" instead
-  def _api_sunshine_value(self):
-    if not self.enabled_sunshine:
-      return
-    sunshine_value = self.adc.read_channel(self.sunshine_channel)
-    print('Sunshine: {}'.format(sunshine_value))
-    position = self.get_position()
-    self.api_server.insert_sunshine_value(sunshine_value, position)
-
   def _api_sunshine_value_v2(self):
     if not self.enabled_sunshine:
       return
     sunshine_value = self.adc.read_channel(self.sunshine_channel)
     print('Sunshine: {}'.format(sunshine_value))
     self.api_server.insert_sunshine_value_v2(sunshine_value, self.uuid)
-
-  # use "_api_soil_moisture_value_v2" instead
-  def _api_soil_moisture_value(self):
-    if not self.enabled_soil_moisture:
-      return
-    soil_moisture_value = self.adc.read_channel(self.soil_moisture_channel)
-    print('Soil moisture: {}'.format(soil_moisture_value))
-    position = self.get_position()
-    self.api_server.insert_soil_moisture_value(soil_moisture_value, position)
 
   def _api_soil_moisture_value_v2(self):
     if not self.enabled_soil_moisture:
