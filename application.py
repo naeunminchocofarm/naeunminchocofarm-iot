@@ -22,7 +22,7 @@ class Application:
   def __init__(self):
     config = Application.__read_config()
     self.uuid = Application._get_uuid(config)
-    self.crops  = Application._create_crops(self.uuid, config)
+    self.crops  = Application._create_crops(config)
 
   def run(self):
     _run_children(self.crops)
@@ -38,9 +38,9 @@ class Application:
     return result
 
   @staticmethod
-  def _create_crops(uuid, config = {}):
+  def _create_crops(config = {}):
     result = config.get(KEY_CROPS, [])
-    result = map(lambda x: Crop(uuid, x), result)
+    result = map(lambda x: Crop(x), result)
     result = list(result)
     return result
   
@@ -52,9 +52,9 @@ class Application:
     return result
 
 class Crop:
-  def __init__(self, uuid, config):
+  def __init__(self, config):
     self.name = Crop._get_name(config)
-    self.sections = Crop._create_sections(uuid, self.name, config)
+    self.sections = Crop._create_sections(config)
 
   def run(self):
     _run_children(self.sections)
@@ -73,9 +73,9 @@ class Crop:
     return result
   
   @staticmethod
-  def _create_sections(uuid, crops_name, config = {}):
+  def _create_sections(config = {}):
     result = config.get(KEY_SECTIONS, [])
-    result = map(lambda x: Section(uuid, crops_name, x), result)
+    result = map(lambda x: Section(x), result)
     result = list(result)
     return result
   
@@ -84,10 +84,9 @@ import threading
 import time
 
 class Section:
-  def __init__(self, uuid, crops_name, config):
-    self.crops_name = crops_name
+  def __init__(self, config):
     self.name = Section.__get_name(config)
-    self.sensors = Section._create_sensors(uuid, crops_name, self.name, config)
+    self.sensors = Section._create_sensors(config)
     self.stop_event = threading.Event()
 
   def run(self):
@@ -126,8 +125,8 @@ class Section:
     return result
   
   @staticmethod
-  def _create_sensors(uuid, crops_name, section_name, config = {}):
+  def _create_sensors(config = {}):
     result = config.get(KEY_SENSORS, [])
-    result = map(lambda x: SensorFactory.create_from_config(uuid, crops_name, section_name, x), result)
+    result = map(lambda x: SensorFactory.create_from_config(x), result)
     result = list(result)
     return result

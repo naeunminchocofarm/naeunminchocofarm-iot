@@ -5,8 +5,8 @@ import datetime
 import requests
 
 class AdcSensor(Sensor):
-  def __init__(self, uuid, crops_name, section_name, config):
-    super().__init__(uuid, crops_name, section_name, config)
+  def __init__(self, config):
+    super().__init__(config)
     self.adc = Adc()
     self.enabled_sunshine = self._get_enable_sunshine()
     self.sunshine_channel = self._get_sunshine_channel()
@@ -24,8 +24,8 @@ class AdcSensor(Sensor):
       return
     
     try:
-      self._api_sunshine_value()
-      self._api_soil_moisture_value()
+      self._api_sunshine_value_v2()
+      self._api_soil_moisture_value_v2()
     except requests.exceptions.ConnectionError as e:
       print(type(e))
       print(e)
@@ -35,6 +35,7 @@ class AdcSensor(Sensor):
   def exit(self):
     pass
 
+  # use "_api_sunshine_value_v2" instead
   def _api_sunshine_value(self):
     if not self.enabled_sunshine:
       return
@@ -43,6 +44,14 @@ class AdcSensor(Sensor):
     position = self.get_position()
     self.api_server.insert_sunshine_value(sunshine_value, position)
 
+  def _api_sunshine_value_v2(self):
+    if not self.enabled_sunshine:
+      return
+    sunshine_value = self.adc.read_channel(self.sunshine_channel)
+    print('Sunshine: {}'.format(sunshine_value))
+    self.api_server.insert_sunshine_value_v2(sunshine_value, self.uuid)
+
+  # use "_api_soil_moisture_value_v2" instead
   def _api_soil_moisture_value(self):
     if not self.enabled_soil_moisture:
       return
@@ -50,6 +59,13 @@ class AdcSensor(Sensor):
     print('Soil moisture: {}'.format(soil_moisture_value))
     position = self.get_position()
     self.api_server.insert_soil_moisture_value(soil_moisture_value, position)
+
+  def _api_soil_moisture_value_v2(self):
+    if not self.enabled_soil_moisture:
+      return
+    soil_moisture_value = self.adc.read_channel(self.soil_moisture_channel)
+    print('Soil moisture: {}'.format(soil_moisture_value))
+    self.api_server.insert_soil_moisture_value_v2(soil_moisture_value, self.uuid)
 
   def _get_enable_sunshine(self):
     result = self.config.get('enableSunshine', False)

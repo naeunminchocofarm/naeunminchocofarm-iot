@@ -1,12 +1,10 @@
 from workers.worker import Worker
 
 class Sensor(Worker):
-  def __init__(self, uuid, crops_name, section_name, config):
+  def __init__(self, config):
     super().__init__()
-    self.uuid = uuid
-    self.crops_name = crops_name
-    self.section_name = section_name
     self.name = Sensor.__get_name(config)
+    self.uuid = Sensor._get_uuid(config)
     self.target = Sensor.__get_target(config)
     self.config = Sensor.__get_config(config)
 
@@ -15,6 +13,13 @@ class Sensor(Worker):
     result = dict.get('name', None)
     if result is None:
       raise TypeError('sensor name cannot be empty')
+    return result
+  
+  @staticmethod
+  def _get_uuid(config = {}):
+    result = config.get('uuid', None)
+    if result is None:
+      raise TypeError('sensor uuid cannot be empty')
     return result
   
   @staticmethod
@@ -28,12 +33,3 @@ class Sensor(Worker):
   def __get_config(config = {}):
     result = config.get('config', {})
     return result
-  
-  def get_position(self):
-    position = {
-      'farm-uuid': self.uuid,
-      'crops-name': self.crops_name,
-      'section-name': self.section_name,
-      'sensor-name': self.name
-    }
-    return position

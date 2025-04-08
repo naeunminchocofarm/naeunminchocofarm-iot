@@ -5,8 +5,8 @@ import RPi.GPIO as GPIO
 import datetime
 
 class PirSensor(Sensor):
-  def __init__(self, uuid, crops_name, section_name, config):
-    super().__init__(uuid, crops_name, section_name, config)
+  def __init__(self, config):
+    super().__init__(config)
     self.gpio = self._get_gpio()
 
   def start(self):

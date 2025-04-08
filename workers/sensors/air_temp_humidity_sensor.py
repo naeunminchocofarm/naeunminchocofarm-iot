@@ -6,8 +6,8 @@ import datetime
 import requests
 
 class AirTemperatureHumiditySensor(Sensor):
-  def __init__(self, uuid, crops_name, section_name, config):
-    super().__init__(uuid, crops_name, section_name, config)
+  def __init__(self, config):
+    super().__init__(config)
     self.interval_seconds = self._get_interval_seconds()
 
   def start(self):
@@ -23,9 +23,8 @@ class AirTemperatureHumiditySensor(Sensor):
       temperature_c = self.dhtDevice.temperature
       humidity_percentage = self.dhtDevice.humidity
       print("Temp: {:.1f} C    Humidity: {:.1f}% ".format(temperature_c, humidity_percentage))
-      position = self.get_position()
-      self.api_server.insert_air_temperature(temperature_c, position)
-      self.api_server.insert_humidity(humidity_percentage, position)
+      self.api_server.insert_air_temperature_v2(temperature_c, self.uuid)
+      self.api_server.insert_humidity_v2(humidity_percentage, self.uuid)
       self.exec_datetime = now + datetime.timedelta(seconds=self.interval_seconds)
     except RuntimeError as e:
       print(type(e))
