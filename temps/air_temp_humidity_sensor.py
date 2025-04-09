@@ -40,7 +40,7 @@ class AirTempHumiditySensor(Sensor):
 
   @staticmethod
   def from_config(config):
-    type = Sensor.get_temp(config)
+    type = Sensor.get_type(config)
     uuid = Sensor.get_uuid(config)
     gpio = AirTempHumiditySensor._get_gpio(config)
     interval_seconds = Sensor.get_interval_seconds(config)

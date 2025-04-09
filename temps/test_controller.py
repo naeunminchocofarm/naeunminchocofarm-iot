@@ -19,6 +19,7 @@ actuators_config = [
 ]
 
 controller_config = {
+  "uuid": "test-controller-uuid-1",
   "sensors": sensors_config,
   "actuators": actuators_config
 }
