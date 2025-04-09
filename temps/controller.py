@@ -100,6 +100,10 @@ class Controller(ABC):
         next_time += self.interval_seconds
       time.sleep(1)
 
+  def command(self, actuator_type, action, parameters = {}):
+    if actuator_type in self.actuators:
+      self.actuators[actuator_type].command(action, parameters)
+
   @abstractmethod
   def _init_resources(self):
     pass

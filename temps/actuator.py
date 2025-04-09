@@ -11,10 +11,10 @@ class Actuator(ABC):
     self._init_resources()
     self.is_started = True
 
-  def apply(self, value):
+  def command(self, action, parameters = {}):
     if not self.is_started:
-      raise RuntimeError("Actuator must be started before applying values")
-    threading.Thread(target=self._apply, args=(value,), daemon=True).start()
+      raise RuntimeError("Actuator must be started before command")
+    threading.Thread(target=self._command, args=(action, parameters), daemon=True).start()
 
   def exit(self):
     self._cleanup_resources()
@@ -29,7 +29,7 @@ class Actuator(ABC):
     pass
 
   @abstractmethod
-  def _apply(self, value: dict):
+  def _command(self, action, parameters = {}):
     pass
 
   @staticmethod

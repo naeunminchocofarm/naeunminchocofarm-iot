@@ -24,4 +24,4 @@ class SectionController(Controller):
       case 'air_temp_humid':
         led_act = self.actuators['led']
         if led_act:
-          led_act.apply({'led': value.get('air_temp', 0.0) >= 25.7})
+          led_act.command('on' if value.get('air_temp', 0.0) >= 25.0 else 'off')

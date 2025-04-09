@@ -8,11 +8,12 @@ class LedActuator(Actuator):
   def _init_resources(self):
     pass
   
-  def _apply(self, value):
-    led = value.get("led", None)
-    if led is None:
-      return
-    print("led on!" if led else "led off.")
+  def _command(self, action, parameters=[]):
+    match action:
+      case "on":
+        print('led on!')
+      case "off":
+        print('led off.')
   
   def _cleanup_resources(self):
     pass
