@@ -19,9 +19,11 @@ actuators_config = [
 ]
 
 controller_config = {
+  "type": "section",
   "uuid": "test-controller-uuid-1",
   "sensors": sensors_config,
-  "actuators": actuators_config
+  "actuators": actuators_config,
+  "intervalSeconds": 1
 }
 
 c = SectionController.from_config(controller_config);
