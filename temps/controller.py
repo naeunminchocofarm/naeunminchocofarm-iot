@@ -1,9 +1,10 @@
-import time
 from sensor_factory import SensorFactory
 from actuator_factory import ActuatorFactory
+from abc import ABC, abstractmethod
 
-class Controller:
-  def __init__(self, sensors = [], actuators = []):
+class Controller(ABC):
+  def __init__(self, uuid, sensors = [], actuators = []):
+    self.uuid = uuid
     self.sensors = {}
     for sensor in sensors:
       self.sensors[sensor.type] = sensor
@@ -13,12 +14,24 @@ class Controller:
       self.actuators[actuator.type] = actuator
 
   @staticmethod
-  def from_config(config = {}):
-    sensors = list(map(SensorFactory.create_sensor, config.get("sensors", [])))
-    actuators = list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
-    return Controller(sensors, actuators)
+  def get_uuid(config = {}):
+    result = config.get('uuid')
+    if not result:
+      raise TypeError('controller uuid cannot be empty')
+    return result
+  
+  @staticmethod
+  def get_sensors(config = {}):
+    return list(map(SensorFactory.create_sensor, config.get("sensors", [])))
+  
+  @staticmethod
+  def get_actuators(config = {}):
+    return list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
   
   def start(self):
+    for sensor in self.sensors.values():
+      sensor.subscribe(self._on_sensor_value)
+
     self._init_resources()
 
     for sensor in self.sensors.values():
@@ -50,39 +63,14 @@ class Controller:
 
     self._cleanup_resources()
 
+  @abstractmethod
   def _init_resources(self):
-    for sensor in self.sensors.values():
-      sensor.subscribe(self._on_sensor_value)
-
+    pass
+  
+  @abstractmethod
   def _cleanup_resources(self):
     pass
 
+  @abstractmethod
   def _on_sensor_value(self, value, type, uuid):
     pass
-
-sensors_config = [
-  {
-    "type": "air_temp_humid",
-    "uuid": "test-uuid-1",
-    "intervalSeconds": 1,
-    "gpio": 27
-  }
-]
-
-actuators_config = [
-  {
-    "type": "led",
-    "uuid": "test-uuid-2",
-    "gpio": 17
-  }
-]
-
-controller_config = {
-  "sensors": sensors_config,
-  "actuators": actuators_config
-}
-
-c = Controller.from_config(controller_config);
-c.start()
-time.sleep(6)
-c.exit()
