@@ -1,11 +1,13 @@
 from controller_factory import ControllerFactory
 from abc import ABC, abstractmethod
+import json
 
 class Supervisor(ABC):
-  def __init__(self, type, uuid, controllers, interval_seconds):
+  def __init__(self, type, uuid, controllers, settings, interval_seconds):
     self.type = type
     self.uuid = uuid
     self.controllers = controllers
+    self.settings = settings
     self.interval_seconds = interval_seconds
 
   @staticmethod
@@ -30,32 +32,22 @@ class Supervisor(ABC):
   def get_interval_seconds(config = {}):
     return config.get("intervalSeconds", 60)
   
+  @staticmethod
+  def get_settings_path(config = {}):
+    result = config.get("settingsPath")
+    if not result:
+      raise TypeError('supervisor settings path cannot be empty')
+    return result
+  
+  @staticmethod
+  def read_settings(settings_path):
+    with open(settings_path, "r") as file:
+      return json.load(file)
+  
+  @abstractmethod
   def start(self):
-    self._init_resources()
-    for controller in self.controllers:
-      try:
-        controller.subscribe(self._on_controller_value)
-        controller.start()
-      except TypeError as err:
-        print(type(err))
-        print(err)
+    pass
 
+  @abstractmethod
   def exit(self):
-    for controller in self.controllers:
-      try:
-        controller.exit()
-      except:
-        continue
-    self._cleanup_resources()
-
-  @abstractmethod
-  def _init_resources(self):
-    pass
-
-  @abstractmethod
-  def _cleanup_resources(self):
-    pass
-
-  @abstractmethod
-  def _on_controller_value(self, value, type, uuid):
     pass
