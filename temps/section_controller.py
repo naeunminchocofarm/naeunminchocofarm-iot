@@ -1,15 +1,16 @@
 from controller import Controller
 
 class SectionController(Controller):
-  def __init__(self, uuid, sensors=..., actuators=...):
-    super().__init__(uuid, sensors, actuators)
+  def __init__(self, type, uuid, sensors=..., actuators=...):
+    super().__init__(type, uuid, sensors, actuators)
 
   @staticmethod
   def from_config(config={}):
+    type = Controller.get_type(config)
     uuid = Controller.get_uuid(config)
     sensors = Controller.get_sensors(config)
     actuators = Controller.get_actuators(config)
-    return SectionController(uuid, sensors, actuators)
+    return SectionController(type, uuid, sensors, actuators)
   
   def _init_resources(self):
     pass
