@@ -1,4 +1,5 @@
 import time
+from farm_supervisor import FarmSupervisor
 
 sensors_config = [
   {
@@ -28,11 +29,12 @@ supervisor_config = {
   "type": "farm",
   "uuid": "test-farm-uuid-1",
   "controllers": controllers_config,
-  "intervalSeconds": 1
+  "intervalSeconds": 2,
+  "settingsPath": "settings.json"
 }
 
 sv = FarmSupervisor.from_config(supervisor_config)
 
 sv.start()
-time.sleep(6)
+time.sleep(10)
 sv.exit()

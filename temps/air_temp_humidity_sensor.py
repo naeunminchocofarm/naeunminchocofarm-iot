@@ -15,8 +15,6 @@ class AirTempHumiditySensor(Sensor):
       try:
         temperature_c = self.dhtDevice.temperature
         humidity_percentage = self.dhtDevice.humidity
-        print("Temp: {:.1f} C    Humidity: {:.1f}% ".format(temperature_c, humidity_percentage))
-
         return {
           "air_temp": temperature_c,
           "humidity": humidity_percentage

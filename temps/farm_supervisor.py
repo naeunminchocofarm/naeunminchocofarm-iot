@@ -51,8 +51,6 @@ class FarmSupervisor(Supervisor):
     for controller in self.controllers:
       self._control_air_temp(controller)
 
-      
-  # 컨트롤러의 기온, 습도를 비교하여 자동제어
   def _control_air_temp(self, controller):
     controller_status = controller.read()
     ath_status = controller_status['sensors']['air_temp_humid']
