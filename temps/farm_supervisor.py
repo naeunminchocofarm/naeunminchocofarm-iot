@@ -40,7 +40,7 @@ class FarmSupervisor(Supervisor):
       self.control_thread.join()
   
   def _handle_control_loop(self):
-    next_time = time.time()
+    next_time = time.time() + 5
     while not self.stop_control.is_set():
       if next_time <= time.time():
         self._control_loop()
@@ -53,12 +53,17 @@ class FarmSupervisor(Supervisor):
 
   def _control_air_temp(self, controller):
     controller_status = controller.read()
-    ath_status = controller_status['sensors']['air_temp_humid']
+    ath_status = controller_status['sensors'].get('air_temp_humid')
+    if not ath_status:
+      return
     print('Temp: {:.2f}    Humidity: {:.2f}    UUID: {}'.format(ath_status['air_temp'], ath_status['humidity'], ath_status['uuid']))
-    led_status = controller_status['actuators']['led']
+    led_status = controller_status['actuators'].get('led')
+    if not led_status:
+      return
+    print('led power:', led_status['power'])
     min_air_temp = self.settings.get('min_air_temp')
     max_air_temp = self.settings.get('max_air_temp')
     if min_air_temp and led_status['power'] and ath_status['air_temp'] <= min_air_temp:
-      controller.command(led_status['type'], 'off')
+      controller.command('led', 'off')
     elif max_air_temp and not led_status['power'] and max_air_temp <= ath_status['air_temp']:
-      controller.command(led_status['type'], 'on')
+      controller.command('led', 'on')

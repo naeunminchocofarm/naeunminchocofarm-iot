@@ -33,8 +33,13 @@ supervisor_config = {
   "settingsPath": "settings.json"
 }
 
-sv = FarmSupervisor.from_config(supervisor_config)
 
-sv.start()
-time.sleep(10)
-sv.exit()
+sv = FarmSupervisor.from_config(supervisor_config)
+try:
+  sv.start()
+  time.sleep(10)
+except Exception as error:
+  print(type(error))
+  print(error)
+finally:
+  sv.exit()
