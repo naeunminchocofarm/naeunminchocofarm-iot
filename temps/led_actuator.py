@@ -28,14 +28,3 @@ class LedActuator(Actuator):
     if result is None:
       raise TypeError('led actuator gpio cannot be empty')
     return result
-  
-
-config = {
-  "gpio": 17
-}
-
-a = LedActuator.from_config(config)
-
-a.start()
-
-a.exit()

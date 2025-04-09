@@ -1,4 +1,3 @@
-import time
 from sensor import Sensor
 import board
 import adafruit_dht
@@ -51,18 +50,3 @@ class AirTempHumiditySensor(Sensor):
     if result is None:
       raise TypeError("air temp humidity sensor gpio cannot empty")
     return result
-
-
-s = AirTempHumiditySensor.from_config({
-  "intervalSeconds": 1,
-  "gpio": 27
-})
-
-s.subscribe(lambda v: print("temp: {:.2f}'C humidity: {:.2f}%".format(v.get("temp", 0.0), v.get("humidity", 0.0))))
-
-s.start()
-
-print('waiting...')
-time.sleep(6)
-
-s.exit()
