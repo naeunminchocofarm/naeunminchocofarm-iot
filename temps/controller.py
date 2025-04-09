@@ -1,18 +1,13 @@
 from sensor_factory import SensorFactory
 from actuator_factory import ActuatorFactory
 from abc import ABC, abstractmethod
-import threading
-import time
 
 class Controller(ABC):
   def __init__(self, type, uuid, sensors = [], actuators = [], interval_seconds=60):
     self.type = type
     self.uuid = uuid
-    self.subscribers = []
     self.sensors = {}
-    self.values = {}
-    self.stop_notify_loop = threading.Event()
-    self.values_lock = threading.Lock()
+    self.sensors_status = {}
     self.interval_seconds = interval_seconds
     for sensor in sensors:
       self.sensors[sensor.type] = sensor
@@ -46,17 +41,12 @@ class Controller(ABC):
   def get_interval_seconds(config = {}):
     return config.get("intervalSeconds", 60)
   
-  def subscribe(self, callback):
-    self.subscribers.append(callback)
-
-  def _notify(self, value):
-    for callback in self.subscribers:
-      callback(value, self.type, self.uuid)
-
   def _handle_sensor_value(self, value, type, uuid):
-    with self.values_lock:
-      self.values.update(value)
-    self._on_sensor_value(value, type, uuid)
+    value.update({
+      "uuid": uuid
+    })
+    self.sensors_status[type] = value
+    # self._on_sensor_value(value, type, uuid)
   
   def start(self):
     self._init_resources()
@@ -73,11 +63,8 @@ class Controller(ABC):
       except TypeError as err:
         print(type(err))
         print(err)
-    self.stop_notify_loop.clear()
-    threading.Thread(target=self._notify_loop).start()
     
   def exit(self):
-    self.stop_notify_loop.set()
     for sensor in self.sensors.values():
       try:
         sensor.exit()
@@ -90,19 +77,23 @@ class Controller(ABC):
         continue
     self._cleanup_resources()
 
-  def _notify_loop(self):
-    next_time = time.time()
-    while not self.stop_notify_loop.is_set():
-      if next_time <= time.time():
-        with self.values_lock:
-          snapshot = self.values.copy()
-        self._notify(snapshot)
-        next_time += self.interval_seconds
-      time.sleep(1)
-
   def command(self, actuator_type, action, parameters = {}):
     if actuator_type in self.actuators:
       self.actuators[actuator_type].command(action, parameters)
+  
+  def read(self) -> dict:
+    actuators_status = {}
+    for actuator in self.actuators.values():
+      status = actuator.read()
+      status.update({
+        "uuid": actuator.uuid
+      })
+      actuators_status[actuator.type] = status
+    result = {
+      "sensors": self.sensors_status,
+      "actuators": actuators_status
+    }
+    return result
 
   @abstractmethod
   def _init_resources(self):
