@@ -2,12 +2,33 @@ from controller_factory import ControllerFactory
 from abc import ABC, abstractmethod
 
 class Supervisor(ABC):
-  def __init__(self, controllers):
+  def __init__(self, type, uuid, controllers, interval_seconds):
+    self.type = type
+    self.uuid = uuid
     self.controllers = controllers
+    self.interval_seconds = interval_seconds
+
+  @staticmethod
+  def get_type(config = {}):
+    result = config.get("type")
+    if not result:
+      raise TypeError('supervisor type cannot be empty')
+    return result
+  
+  @staticmethod
+  def get_uuid(config = {}):
+    result = config.get("uuid")
+    if not result:
+      raise TypeError('supervisor uuid cannot be empty')
+    return result
 
   @staticmethod
   def get_controllers(config = {}):
     return list(map(ControllerFactory.create_controller, config.get("controllers", [])))
+  
+  @staticmethod
+  def get_interval_seconds(config = {}):
+    return config.get("intervalSeconds", 60)
   
   def start(self):
     self._init_resources()
