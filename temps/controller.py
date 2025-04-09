@@ -7,13 +7,12 @@ class Controller(ABC):
     self.type = type
     self.uuid = uuid
     self.sensors = {}
-    self.sensors_status = {}
-    self.interval_seconds = interval_seconds
     for sensor in sensors:
       self.sensors[sensor.type] = sensor
     self.actuators = {}
     for actuator in actuators:
       self.actuators[actuator.type] = actuator
+    self.interval_seconds = interval_seconds
 
   @staticmethod
   def get_type(config = {}):
@@ -41,68 +40,18 @@ class Controller(ABC):
   def get_interval_seconds(config = {}):
     return config.get("intervalSeconds", 60)
   
-  def _handle_sensor_value(self, value, type, uuid):
-    value.update({
-      "uuid": uuid
-    })
-    self.sensors_status[type] = value
-    # self._on_sensor_value(value, type, uuid)
-  
+  @abstractmethod
   def start(self):
-    self._init_resources()
-    for sensor in self.sensors.values():
-      try:
-        sensor.subscribe(self._handle_sensor_value)
-        sensor.start()
-      except TypeError as err:
-        print(type(err))
-        print(err)
-    for actuator in self.actuators.values():
-      try:
-        actuator.start()
-      except TypeError as err:
-        print(type(err))
-        print(err)
+    pass
     
+  @abstractmethod
   def exit(self):
-    for sensor in self.sensors.values():
-      try:
-        sensor.exit()
-      except:
-        continue
-    for actuator in self.actuators.values():
-      try:
-        actuator.exit()
-      except:
-        continue
-    self._cleanup_resources()
+    pass
 
+  @abstractmethod
   def command(self, actuator_type, action, parameters = {}):
-    if actuator_type in self.actuators:
-      self.actuators[actuator_type].command(action, parameters)
+    pass
   
+  @abstractmethod
   def read(self) -> dict:
-    actuators_status = {}
-    for actuator in self.actuators.values():
-      status = actuator.read()
-      status.update({
-        "uuid": actuator.uuid
-      })
-      actuators_status[actuator.type] = status
-    result = {
-      "sensors": self.sensors_status,
-      "actuators": actuators_status
-    }
-    return result
-
-  @abstractmethod
-  def _init_resources(self):
-    pass
-  
-  @abstractmethod
-  def _cleanup_resources(self):
-    pass
-
-  @abstractmethod
-  def _on_sensor_value(self, value, type, uuid):
     pass
