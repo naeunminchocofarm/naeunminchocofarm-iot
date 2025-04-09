@@ -1,13 +1,19 @@
 from sensor_factory import SensorFactory
 from actuator_factory import ActuatorFactory
 from abc import ABC, abstractmethod
+import threading
+import time
 
 class Controller(ABC):
-  def __init__(self, type, uuid, sensors = [], actuators = []):
+  def __init__(self, type, uuid, sensors = [], actuators = [], interval_seconds=60):
     self.type = type
     self.uuid = uuid
     self.subscribers = []
     self.sensors = {}
+    self.values = {}
+    self.stop_notify_loop = threading.Event()
+    self.values_lock = threading.Lock()
+    self.interval_seconds = interval_seconds
     for sensor in sensors:
       self.sensors[sensor.type] = sensor
     self.actuators = {}
@@ -36,6 +42,10 @@ class Controller(ABC):
   def get_actuators(config = {}):
     return list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
   
+  @staticmethod
+  def get_interval_seconds(config = {}):
+    return config.get("intervalSeconds", 60)
+  
   def subscribe(self, callback):
     self.subscribers.append(callback)
 
@@ -44,12 +54,9 @@ class Controller(ABC):
       callback(value, self.type, self.uuid)
 
   def _handle_sensor_value(self, value, type, uuid):
+    with self.values_lock:
+      self.values.update(value)
     self._on_sensor_value(value, type, uuid)
-    self._notify({
-      "sensor_value": value,
-      "sensor_type": type,
-      "sensor_uuid": uuid
-    }, self.type, self.uuid)
   
   def start(self):
     self._init_resources()
@@ -66,8 +73,11 @@ class Controller(ABC):
       except TypeError as err:
         print(type(err))
         print(err)
+    self.stop_notify_loop.clear()
+    threading.Thread(target=self._notify_loop).start()
     
   def exit(self):
+    self.stop_notify_loop.set()
     for sensor in self.sensors.values():
       try:
         sensor.exit()
@@ -79,6 +89,16 @@ class Controller(ABC):
       except:
         continue
     self._cleanup_resources()
+
+  def _notify_loop(self):
+    next_time = time.time()
+    while not self.stop_notify_loop.is_set():
+      if next_time <= time.time():
+        with self.values_lock:
+          snapshot = self.values.copy()
+        self._notify(snapshot)
+        next_time += self.interval_seconds
+      time.sleep(1)
 
   @abstractmethod
   def _init_resources(self):
