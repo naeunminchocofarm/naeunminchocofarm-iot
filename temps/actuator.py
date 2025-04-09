@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 import threading
 
 class Actuator(ABC):
-  def __init__(self):
+  def __init__(self, type):
+    self.type = type
     self.is_started = False
 
   def start(self):
@@ -29,3 +30,10 @@ class Actuator(ABC):
   @abstractmethod
   def _apply(self, value: dict):
     pass
+
+  @staticmethod
+  def get_type(config = {}):
+    result = config.get("type", None)
+    if result is None:
+      raise TypeError("actuator type cannot be empty")
+    return result

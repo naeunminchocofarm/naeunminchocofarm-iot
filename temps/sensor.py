@@ -3,7 +3,8 @@ import time
 from abc import ABC, abstractmethod
 
 class Sensor(ABC):
-  def __init__(self, interval_seconds = 1):
+  def __init__(self, type, interval_seconds = 1):
+    self.type = type
     self.subscribers = []
     self.stop_event = threading.Event()
     self.task = None
@@ -49,6 +50,13 @@ class Sensor(ABC):
   @abstractmethod
   def _read(self) -> dict:
     pass
+
+  @staticmethod
+  def get_type(config = {}):
+    result = config.get("type", None)
+    if result is None:
+      raise TypeError("sensor type cannot be empty")
+    return result
 
   @staticmethod
   def get_interval_seconds(config):
