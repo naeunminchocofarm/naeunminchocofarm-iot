@@ -1,8 +1,8 @@
 from actuator import Actuator
 
 class LedActuator(Actuator):
-  def __init__(self, type, gpio):
-    super().__init__(type)
+  def __init__(self, type, uuid, gpio):
+    super().__init__(type, uuid)
     self.gpio = gpio
 
   def _init_resources(self):
@@ -20,8 +20,9 @@ class LedActuator(Actuator):
   @staticmethod
   def from_config(config: dict):
     type = Actuator.get_type(config)
+    uuid = Actuator.get_uuid(config)
     gpio = LedActuator._get_gpio(config)
-    return LedActuator(type, gpio)
+    return LedActuator(type, uuid, gpio)
 
   @staticmethod
   def _get_gpio(config = {}):

@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 import threading
 
 class Actuator(ABC):
-  def __init__(self, type):
+  def __init__(self, type, uuid):
     self.type = type
+    self.uuid = uuid
     self.is_started = False
 
   def start(self):
@@ -36,4 +37,11 @@ class Actuator(ABC):
     result = config.get("type", None)
     if result is None:
       raise TypeError("actuator type cannot be empty")
+    return result
+  
+  @staticmethod
+  def get_uuid(config = {}):
+    result = config.get("uuid")
+    if not result:
+      raise TypeError("actuator uuid cannot be empty")
     return result

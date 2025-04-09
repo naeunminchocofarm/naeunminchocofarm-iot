@@ -3,8 +3,9 @@ import time
 from abc import ABC, abstractmethod
 
 class Sensor(ABC):
-  def __init__(self, type, interval_seconds = 1):
+  def __init__(self, type, uuid, interval_seconds = 1):
     self.type = type
+    self.uuid = uuid
     self.subscribers = []
     self.stop_event = threading.Event()
     self.task = None
@@ -15,7 +16,7 @@ class Sensor(ABC):
 
   def _notify(self, value):
     for callback in self.subscribers:
-      callback(value)
+      callback(value, self.type, self.uuid)
 
   def start(self):
     self._init_resources()
@@ -56,6 +57,13 @@ class Sensor(ABC):
     result = config.get("type", None)
     if result is None:
       raise TypeError("sensor type cannot be empty")
+    return result
+  
+  @staticmethod
+  def get_uuid(config = {}):
+    result = config.get("uuid")
+    if not result:
+      raise TypeError("sensor uuid cannot be empty")
     return result
 
   @staticmethod
