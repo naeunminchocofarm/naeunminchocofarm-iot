@@ -1,13 +1,24 @@
 from air_temp_humidity_sensor import AirTempHumiditySensor
 from led_actuator import LedActuator
 import time
+from sensor_factory import SensorFactory
+from actuator_factory import ActuatorFactory
 
 class Controller:
-  def __init__(self, air_temp_humid_sensor):
-    self.air_temp_humid_sensor = air_temp_humid_sensor
+  def __init__(self, sensors = [], actuators = []):
+    self.sensors = {}
+    for sensor in sensors:
+      self.sensors.setdefault(sensor.type, []).append(sensor)
+
+    self.actuators = {}
+    for actuator in actuators:
+      self.actuators.setdefault(actuator.type, []).append(actuator)
 
   @staticmethod
   def from_config(config = {}):
+    sensors = list(map(SensorFactory.create_sensor, config.get("sensors", [])))
+    actuators = list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
+    return Controller(sensors, actuators)
 
 
 s = AirTempHumiditySensor.from_config({
