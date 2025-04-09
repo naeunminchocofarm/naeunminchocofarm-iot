@@ -32,6 +32,10 @@ class Actuator(ABC):
   def _command(self, action, parameters = {}):
     pass
 
+  @abstractmethod
+  def read(self) -> dict:
+    pass
+
   @staticmethod
   def get_type(config = {}):
     result = config.get("type", None)
