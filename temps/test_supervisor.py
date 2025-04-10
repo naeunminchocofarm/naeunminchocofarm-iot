@@ -12,6 +12,11 @@ sensors_config = [
     "uuid": "test-sensor-uuid-2",
     "ldrChannel": 0,
     "soilMoistureChannel": 1
+  },
+  {
+    "type": "pir",
+    "uuid": "test-sensor-uuid-3",
+    "gpio": 17
   }
 ]
 actuators_config = [

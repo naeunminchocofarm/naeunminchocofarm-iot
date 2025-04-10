@@ -1,5 +1,6 @@
 from air_temp_humidity_sensor import AirTempHumiditySensor
 from adc_sensor import AdcSensor
+from pir_sensor import PirSensor
 
 class SensorFactory:
   @staticmethod
@@ -10,5 +11,7 @@ class SensorFactory:
         return AirTempHumiditySensor.from_config(config)
       case "adc":
         return AdcSensor.from_config(config)
+      case "pir":
+        return PirSensor.from_config(config)
       case _:
         raise TypeError('Unsupported sensor type: {}'.format(type))
