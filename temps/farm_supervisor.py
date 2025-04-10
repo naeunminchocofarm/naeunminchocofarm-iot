@@ -1,5 +1,6 @@
 from supervisor import Supervisor
 from ncf_subscriber import NcfSubscriber, NcfFrame
+import json
 
 class FarmSupervisor(Supervisor):
   def __init__(self, type, uuid, controllers, settings, interval_seconds, websocket_path):
@@ -34,8 +35,24 @@ class FarmSupervisor(Supervisor):
     self.subscriber = NcfSubscriber(self.websocket_path, self.uuid)
     def _on_open(subs):
       self.subscriber.subscribe()
-    def _on_message(subs, frame: NcfFrame):
-      pass
+
+    def _on_message(subs: NcfSubscriber, frame: NcfFrame):
+      match frame.headers.get('content-type'):
+        case 'text':
+          pass
+        case 'json':
+          data = json.loads(frame.body)
+          match data.get('method'):
+            case 'update-settings':
+              settings = data.get('settings', {})
+              self.update_settings(settings)
+              res = {
+                'method': 'current-settings',
+                'settings': self.settings
+              }
+              res = json.dumps(res)
+              subs.send(headers={'content-type': 'json'}, body=res)
+
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
     self.subscriber.connect()

@@ -1,8 +1,6 @@
-dict = {}
-for i in range(5):
-  list = dict.get('num')
-  if not list:
-    dict['num'] = []
-  dict['num'].append(i)
+import json
 
-print(dict)
+str = '{"name": "alice", "age": 25.6}'
+data = json.loads(str)
+print('name:', data['name'])
+print('age:', data['age'])
