@@ -4,7 +4,7 @@ class LedActuator(Actuator):
   def __init__(self, type, uuid, gpio):
     super().__init__(type, uuid)
     self.gpio = gpio
-    self.power = False
+    self.power = 'off'
 
   def _init_resources(self):
     pass
@@ -12,10 +12,10 @@ class LedActuator(Actuator):
   def _command(self, action, parameters=[]):
     match action:
       case "on":
-        self.power = True
+        self.power = 'on'
         print('led on!')
       case "off":
-        self.power = False
+        self.power = 'off'
         print('led off.')
   
   def _cleanup_resources(self):
