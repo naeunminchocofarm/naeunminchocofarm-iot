@@ -5,11 +5,17 @@ class LedActuator(Actuator):
     super().__init__(type, uuid)
     self.gpio = gpio
     self.power = 'off'
+    self.is_started = False
 
-  def _init_resources(self):
-    pass
-  
-  def _command(self, action, parameters=[]):
+  def start(self):
+    self.is_started = True
+
+  def exit(self):
+    self.is_started = False
+
+  def command(self, action, parameters=[]):
+    if not self.is_started:
+      raise RuntimeError("Actuator must be started before command")
     match action:
       case "on":
         self.power = 'on'
@@ -17,9 +23,6 @@ class LedActuator(Actuator):
       case "off":
         self.power = 'off'
         print('led off.')
-  
-  def _cleanup_resources(self):
-    pass
 
   def read(self):
     return {

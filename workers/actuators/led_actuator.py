@@ -31,7 +31,7 @@ class LedActuator(Actuator):
     self.subscriber = subscriber
 
   def loop(self):
-    
+    pass
 
   def exit(self):
     self.subscriber.close()
