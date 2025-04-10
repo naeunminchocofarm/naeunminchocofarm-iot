@@ -28,8 +28,8 @@ class SectionController(Controller):
         print(err)
 
   def _handle_sensor_value(self, value, type, uuid):
-    self._automatic_control_actuators(value, type)
     self._save_sensors_status(value, type, uuid)
+    self._automatic_control_actuators(value, type)
 
   def _automatic_control_actuators(self, sensor_value, sensor_type):
     match sensor_type:
