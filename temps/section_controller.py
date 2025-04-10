@@ -34,20 +34,18 @@ class SectionController(Controller):
   def _control_actuators(self, sensor_value, sensor_type):
     match sensor_type:
       case 'air_temp_humid':
-        if 'air_temp' in sensor_value:
-          self._automatic_control_led(sensor_value['air_temp'])
+        if 'air_temp' in sensor_value and 'min_air_tmep' in self.settings and 'max_air_temp' in self.settings:
+          self._automatic_control_led(sensor_value['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
 
-  def _automatic_control_led(self, air_temp):
+  def _automatic_control_led(self, air_temp, min_air_temp, max_air_temp):
     if 'led' in self.actuators:
       led = self.actuators['led']
       led_status = led.read()
       if "power" in led_status:
         led_power = led_status['power']
-        min_air_temp = self.settings.get('min_air_temp')
-        max_air_temp = self.settings.get('max_air_temp')
-        if min_air_temp and led_power and air_temp <= min_air_temp:
+        if led_power and air_temp <= min_air_temp:
           led.command('on')
-        elif max_air_temp and not led_power and max_air_temp <= air_temp:
+        elif not led_power and max_air_temp <= air_temp:
           led.command('off')
 
   def _save_sensors_status(self, sensor_value, sensor_type, sensor_uuid):
