@@ -3,15 +3,15 @@ import board
 import adafruit_dht
 
 class AirTempHumiditySensor(Sensor):
-  def __init__(self, type, uuid, gpio, interval_seconds=1):
-    super().__init__(type, uuid, interval_seconds)
+  def __init__(self, type, uuid, gpio):
+    super().__init__(type, uuid)
     self.gpio = gpio
     self.is_ready = False
 
-  def _init_resources(self):
+  def start(self):
     self.dhtDevice = self._createDhtDevice()
     self.is_ready = True
-  
+
   def read(self):
     for i in range(10):
       try:
@@ -29,7 +29,7 @@ class AirTempHumiditySensor(Sensor):
         print(e)
     return {}
   
-  def _cleanup_resources(self):
+  def exit(self):
     self.is_ready = False
     self.dhtDevice.exit()
 
@@ -43,8 +43,7 @@ class AirTempHumiditySensor(Sensor):
     type = Sensor.get_type(config)
     uuid = Sensor.get_uuid(config)
     gpio = AirTempHumiditySensor._get_gpio(config)
-    interval_seconds = Sensor.get_interval_seconds(config)
-    return AirTempHumiditySensor(type, uuid, gpio, interval_seconds)
+    return AirTempHumiditySensor(type, uuid, gpio)
   
   @staticmethod
   def _get_gpio(config):

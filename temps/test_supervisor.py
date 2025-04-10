@@ -5,7 +5,6 @@ sensors_config = [
   {
     "type": "air_temp_humid",
     "uuid": "test-uuid-1",
-    "intervalSeconds": 1,
     "gpio": 27
   }
 ]
@@ -22,16 +21,15 @@ controllers_config = [
     "uuid": "test-controller-uuid-1",
     "sensors": sensors_config,
     "actuators": actuators_config,
-    "intervalSeconds": 1
   }
 ]
 supervisor_config = {
   "type": "farm",
   "uuid": "test-farm-uuid-1",
-  "controllers": controllers_config,
-  "intervalSeconds": 2,
+  "intervalSeconds": 1,
   "settingsPath": "settings.json",
-  "websocketPath": "ws://192.168.30.128:8080/ws"
+  "websocketPath": "ws://192.168.30.128:8080/ws",
+  "controllers": controllers_config
 }
 
 sv = FarmSupervisor.from_config(supervisor_config)

@@ -3,7 +3,7 @@ from actuator_factory import ActuatorFactory
 from abc import ABC, abstractmethod
 
 class Controller(ABC):
-  def __init__(self, type, uuid, sensors = [], actuators = [], interval_seconds=60):
+  def __init__(self, type, uuid, sensors = [], actuators = []):
     self.type = type
     self.uuid = uuid
     self.sensors = {}
@@ -12,7 +12,6 @@ class Controller(ABC):
     self.actuators = {}
     for actuator in actuators:
       self.actuators[actuator.type] = actuator
-    self.interval_seconds = interval_seconds
     self.settings = {}
 
   def update_settings(self, settings):
@@ -39,10 +38,6 @@ class Controller(ABC):
   @staticmethod
   def get_actuators(config = {}):
     return list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
-  
-  @staticmethod
-  def get_interval_seconds(config = {}):
-    return config.get("intervalSeconds", 60)
   
   @abstractmethod
   def start(self):

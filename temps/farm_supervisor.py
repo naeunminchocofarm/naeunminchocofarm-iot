@@ -12,8 +12,8 @@ class FarmSupervisor(Supervisor):
   def from_config(config = {}):
     type = Supervisor.get_type(config)
     uuid = Supervisor.get_uuid(config)
-    controllers = Supervisor.get_controllers(config)
     interval_seconds = Supervisor.get_interval_seconds(config)
+    controllers = Supervisor.get_controllers(config, interval_seconds)
     settings_path = Supervisor.get_settings_path(config)
     settings = Supervisor.read_settings(settings_path)
     websocket_path = FarmSupervisor.get_websocket_path(config)
@@ -38,8 +38,6 @@ class FarmSupervisor(Supervisor):
 
     def _on_message(subs, frame: NcfFrame):
       match frame.headers.get('content-type'):
-        case 'text':
-          pass
         case 'json':
           data = json.loads(frame.body)
           match data.get('method'):
