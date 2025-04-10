@@ -1,8 +1,8 @@
 from controller import Controller
 
 class SectionController(Controller):
-  def __init__(self, type, uuid, sensors=[], actuators=[], interval_seconds = 60):
-    super().__init__(type, uuid, sensors, actuators, interval_seconds)
+  def __init__(self, type, uuid, settings, sensors=[], actuators=[], interval_seconds = 60):
+    super().__init__(type, uuid, settings, sensors, actuators, interval_seconds)
     self.sensors_status = {}
 
   @staticmethod
@@ -28,11 +28,27 @@ class SectionController(Controller):
         print(err)
 
   def _handle_sensor_value(self, value, type, uuid):
-    self._control_actuators(value, type, uuid)
+    self._control_actuators(value, type)
     self._save_sensors_status(value, type, uuid)
 
-  def _control_actuators(self, sensor_value, sensor_type, sensor_uuid):
-    pass
+  def _control_actuators(self, sensor_value, sensor_type):
+    match sensor_type:
+      case 'air_temp_humid':
+        if 'air_temp' in sensor_value:
+          self._automatic_control_led(sensor_value['air_temp'])
+
+  def _automatic_control_led(self, air_temp):
+    if 'led' in self.actuators:
+      led = self.actuators['led']
+      led_status = led.read()
+      if "power" in led_status:
+        led_power = led_status['power']
+        min_air_temp = self.settings.get('min_air_temp')
+        max_air_temp = self.settings.get('max_air_temp')
+        if min_air_temp and led_power and air_temp <= min_air_temp:
+          led.command('on')
+        elif max_air_temp and not led_power and max_air_temp <= air_temp:
+          led.command('off')
 
   def _save_sensors_status(self, sensor_value, sensor_type, sensor_uuid):
     sensor_value.update({
