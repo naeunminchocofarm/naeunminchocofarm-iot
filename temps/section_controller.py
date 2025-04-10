@@ -36,10 +36,10 @@ class SectionController(Controller):
       case 'air_temp_humid':
         if (
           'air_temp' in sensor_value 
-          and 'min_air_tmep' in self.settings 
+          and 'min_air_temp' in self.settings 
           and 'max_air_temp' in self.settings
         ):
-          self._automatic_control_led(sensor_value['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
+          self._automatic_control_led(sensor_value['air_temp'], int(self.settings['min_air_temp']), int(self.settings['max_air_temp']))
 
   def _automatic_control_led(self, air_temp, min_air_temp, max_air_temp):
     if 'led' in self.actuators:
