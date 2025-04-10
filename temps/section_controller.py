@@ -1,4 +1,5 @@
 from controller import Controller
+import threading
 
 class SectionController(Controller):
   def __init__(self, type, uuid, sensors=[], actuators=[], interval_seconds = 60):
@@ -28,18 +29,18 @@ class SectionController(Controller):
         print(err)
 
   def _handle_sensor_value(self, value, type, uuid):
+    threading.Thread(target=self._automatic_control_actuators, args=(value, type), daemon=True).start()
     self._save_sensors_status(value, type, uuid)
-    self._automatic_control_actuators(value, type)
 
   def _automatic_control_actuators(self, sensor_value, sensor_type):
     match sensor_type:
       case 'air_temp_humid':
-        if (
-          'air_temp' in sensor_value 
-          and 'min_air_temp' in self.settings 
-          and 'max_air_temp' in self.settings
-        ):
-          self._automatic_control_led(sensor_value['air_temp'], int(self.settings['min_air_temp']), int(self.settings['max_air_temp']))
+        air_temp = sensor_value.get('air_temp')
+        min_air_temp = self.settings.get('min_air_temp')
+        max_air_temp = self.settings.get('max_air_temp')
+
+        if (air_temp is not None and min_air_temp is not None and max_air_temp is not None):
+          self._automatic_control_led(sensor_value['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
 
   def _automatic_control_led(self, air_temp, min_air_temp, max_air_temp):
     if 'led' in self.actuators:
