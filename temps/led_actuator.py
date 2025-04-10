@@ -6,20 +6,20 @@ class LedActuator(Actuator):
     super().__init__(type, uuid)
     self.gpio = gpio
     self.power = 'off'
-    self.is_started = False
+    self.is_ready = False
 
   def start(self):
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self.gpio, GPIO.OUT)
-    self.is_started = True
+    self.is_ready = True
 
   def exit(self):
-    self.is_started = False
+    self.is_ready = False
     GPIO.cleanup()
 
   def command(self, action, parameters=[]):
-    if not self.is_started:
+    if not self.is_ready:
       raise RuntimeError("Actuator must be started before command")
     match action:
       case "on":

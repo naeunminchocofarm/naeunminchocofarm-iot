@@ -1,12 +1,16 @@
 from supervisor import Supervisor
 from ncf_subscriber import NcfSubscriber, NcfFrame
 import json
+import time
+import threading
 
 class FarmSupervisor(Supervisor):
   def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path):
     super().__init__(type, uuid, controllers, settings_path, interval_seconds)
     self.websocket_path = websocket_path
     self.subscriber = None
+    self.realtime_thread = None
+    self.stop_realtime = threading.Event()
 
   @staticmethod
   def from_config(config = {}):
@@ -21,6 +25,7 @@ class FarmSupervisor(Supervisor):
   def start(self):
     self._start_controllers()
     self._start_socket()
+    self._start_realtime()
 
   def _start_controllers(self):
     for controller in self.controllers:
@@ -43,17 +48,17 @@ class FarmSupervisor(Supervisor):
             case 'update-settings':
               settings = data.get('settings', {})
               self.update_settings(settings)
-              self._response_socket_current_settings()
+              self._send_current_settings_to_socket()
             case 'get-settings':
-              self._response_socket_current_settings()
+              self._send_current_settings_to_socket()
             case 'get-status':
-              self._response_socket_current_status()
+              self._send_current_status_to_socket()
 
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
     self.subscriber.connect()
 
-  def _response_socket_current_settings(self):
+  def _send_current_settings_to_socket(self):
     if self.subscriber is None:
       return
     res = {
@@ -63,7 +68,7 @@ class FarmSupervisor(Supervisor):
     res = json.dumps(res)
     self.subscriber.send(headers={'content-type': 'json'}, body=res)
   
-  def _response_socket_current_status(self):
+  def _send_current_status_to_socket(self):
     if self.subscriber is None:
       return
     res = {
@@ -73,9 +78,22 @@ class FarmSupervisor(Supervisor):
     res = json.dumps(res)
     self.subscriber.send(headers={'content-type': 'json'}, body=res)
 
+  def _start_realtime(self):
+    self.stop_realtime.clear()
+    self.realtime_thread = threading.Thread(target=self._handle_realtime)
+    self.realtime_thread.start()
+
+  def _handle_realtime(self):
+    next_time = time.time()
+    while not self.stop_realtime.is_set():
+      next_time += 1
+      self._send_current_status_to_socket()
+      time.sleep(max(0, next_time - time.time()))
+
   def exit(self):
-    self._stop_controllers()
+    self._stop_realtime()
     self._stop_socket()
+    self._stop_controllers()
   
   def _stop_controllers(self):
     for controller in self.controllers:
@@ -87,6 +105,11 @@ class FarmSupervisor(Supervisor):
   def _stop_socket(self):
     if self.subscriber:
       self.subscriber.close()
+
+  def _stop_realtime(self):
+    self.stop_realtime.set()
+    if self.realtime_thread:
+      self.realtime_thread.join()
 
   def read(self):
     return {

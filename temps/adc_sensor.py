@@ -7,17 +7,22 @@ class AdcSensor(Sensor):
     self.ldr_channel = ldr_channel
     self.soil_moisture_channel = soil_moisture_channel
     self.spi = None
+    self.is_ready = False
   
   def start(self):
     self.spi = spidev.SpiDev()
     self.spi.open(0, 0)
     self.spi.max_speed_hz = 100000
+    self.is_ready = True
   
   def exit(self):
+    self.is_ready = False
     self.spi.close()
     self.spi = None
   
   def read(self):
+    if not self.is_ready:
+      return {}
     return {
       'type': self.type,
       'uuid': self.uuid,

@@ -13,6 +13,8 @@ class AirTempHumiditySensor(Sensor):
     self.is_ready = True
 
   def read(self):
+    if not self.is_ready:
+      return {}
     for i in range(10):
       try:
         return {

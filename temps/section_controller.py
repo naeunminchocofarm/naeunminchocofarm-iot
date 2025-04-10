@@ -49,6 +49,7 @@ class SectionController(Controller):
       time.sleep(0.4)
       if time.time() < next_time:
         continue
+      next_time += self.interval_seconds
       for sensor in self.sensors.values():
         try:
           self._control_sensor(sensor)
@@ -80,9 +81,9 @@ class SectionController(Controller):
       led.command('on')
 
   def exit(self):
-    self._exit_sensors()
-    self._exit_actuators()
     self._stop_auto_control()
+    self._exit_actuators()
+    self._exit_sensors()
   
   def _exit_sensors(self):
     for sensor in self.sensors.values():
@@ -100,7 +101,7 @@ class SectionController(Controller):
 
   def _stop_auto_control(self):
     self.stop_auto.set()
-    if self.auto_thread is not None:
+    if self.auto_thread:
       self.auto_thread.join()
 
   def command(self, actuator_type, action, parameters=...):
