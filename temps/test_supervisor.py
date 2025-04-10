@@ -30,9 +30,9 @@ supervisor_config = {
   "uuid": "test-farm-uuid-1",
   "controllers": controllers_config,
   "intervalSeconds": 2,
-  "settingsPath": "settings.json"
+  "settingsPath": "settings.json",
+  "websocketPath": "ws://192.168.30.128:8080/ws"
 }
-
 
 sv = FarmSupervisor.from_config(supervisor_config)
 try:

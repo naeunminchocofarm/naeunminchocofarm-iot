@@ -1,12 +1,11 @@
 from supervisor import Supervisor
-import threading
-import time
+from ncf_subscriber import NcfSubscriber, NcfFrame
 
 class FarmSupervisor(Supervisor):
-  def __init__(self, type, uuid, controllers, settings, interval_seconds):
+  def __init__(self, type, uuid, controllers, settings, interval_seconds, websocket_path):
     super().__init__(type, uuid, controllers, settings, interval_seconds)
-    self.control_thread = None
-    self.stop_control = threading.Event()
+    self.websocket_path = websocket_path
+    self.subscriber = None
 
   @staticmethod
   def from_config(config = {}):
@@ -16,54 +15,49 @@ class FarmSupervisor(Supervisor):
     interval_seconds = Supervisor.get_interval_seconds(config)
     settings_path = Supervisor.get_settings_path(config)
     settings = Supervisor.read_settings(settings_path)
-    return FarmSupervisor(type, uuid, controllers, settings, interval_seconds)
+    websocket_path = FarmSupervisor.get_websocket_path(config)
+    return FarmSupervisor(type, uuid, controllers, settings, interval_seconds, websocket_path)
       
   def start(self):
+    self._start_controllers()
+    self._start_socket()
+
+  def _start_controllers(self):
     for controller in self.controllers:
       try:
         controller.start()
       except TypeError as err:
         print(type(err))
         print(err)
-    self.stop_control.clear()
-    self.control_thread = threading.Thread(target=self._handle_control_loop)
-    self.control_thread.start()
-  
+
+  def _start_socket(self):
+    self.subscriber = NcfSubscriber(self.websocket_path, self.uuid)
+    def _on_open(subs):
+      self.subscriber.subscribe()
+    def _on_message(subs, frame: NcfFrame):
+      pass
+    self.subscriber.on_open = _on_open
+    self.subscriber.on_message = _on_message
+    self.subscriber.connect()
+
   def exit(self):
-    self.stop_control.set()
+    self._stop_controllers()
+    self._stop_socket()
+  
+  def _stop_controllers(self):
     for controller in self.controllers:
       try:
         controller.exit()
       except:
         continue
-    if self.control_thread:
-      self.control_thread.join()
-  
-  def _handle_control_loop(self):
-    next_time = time.time() + 5
-    while not self.stop_control.is_set():
-      if next_time <= time.time():
-        self._control_loop()
-        next_time += self.interval_seconds
-      time.sleep(0.4)
 
-  def _control_loop(self):
-    for controller in self.controllers:
-      self._control_air_temp(controller)
+  def _stop_socket(self):
+    if self.subscriber:
+      self.subscriber.close()
 
-  def _control_air_temp(self, controller):
-    controller_status = controller.read()
-    ath_status = controller_status['sensors'].get('air_temp_humid')
-    if not ath_status:
-      return
-    print('Temp: {:.2f}    Humidity: {:.2f}    UUID: {}'.format(ath_status['air_temp'], ath_status['humidity'], ath_status['uuid']))
-    led_status = controller_status['actuators'].get('led')
-    if not led_status:
-      return
-    print('led power:', led_status['power'])
-    min_air_temp = self.settings.get('min_air_temp')
-    max_air_temp = self.settings.get('max_air_temp')
-    if min_air_temp and led_status['power'] and ath_status['air_temp'] <= min_air_temp:
-      controller.command('led', 'off')
-    elif max_air_temp and not led_status['power'] and max_air_temp <= ath_status['air_temp']:
-      controller.command('led', 'on')
+  @staticmethod
+  def get_websocket_path(config = {}):
+    result = config.get('websocketPath')
+    if not result:
+      raise TypeError('Farm supervisor websocket path cannot be empty')
+    return result

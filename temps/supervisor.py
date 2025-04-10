@@ -12,6 +12,11 @@ class Supervisor(ABC):
     for controller in self.controllers:
       controller.update_settings(self.settings)
 
+  def update_settings(self, settings):
+    self.settings.update(settings)
+    for controller in self.controllers:
+      controller.update_settings(self.settings)
+
   @staticmethod
   def get_type(config = {}):
     result = config.get("type")
