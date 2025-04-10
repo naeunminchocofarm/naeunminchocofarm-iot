@@ -4,8 +4,14 @@ from farm_supervisor import FarmSupervisor
 sensors_config = [
   {
     "type": "air_temp_humid",
-    "uuid": "test-uuid-1",
+    "uuid": "test-sensor-uuid-1",
     "gpio": 27
+  },
+  {
+    "type": "adc",
+    "uuid": "test-sensor-uuid-2",
+    "ldrChannel": 0,
+    "soilMoistureChannel": 1
   }
 ]
 actuators_config = [
