@@ -36,7 +36,7 @@ class FarmSupervisor(Supervisor):
     def _on_open(subs):
       self.subscriber.subscribe()
 
-    def _on_message(subs: NcfSubscriber, frame: NcfFrame):
+    def _on_message(subs, frame: NcfFrame):
       match frame.headers.get('content-type'):
         case 'text':
           pass
@@ -46,16 +46,35 @@ class FarmSupervisor(Supervisor):
             case 'update-settings':
               settings = data.get('settings', {})
               self.update_settings(settings)
-              res = {
-                'method': 'current-settings',
-                'settings': self.settings
-              }
-              res = json.dumps(res)
-              subs.send(headers={'content-type': 'json'}, body=res)
+              self._response_socket_current_settings()
+            case 'get-settings':
+              self._response_socket_current_settings()
+            case 'get-status':
+              self._response_socket_current_status()
 
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
     self.subscriber.connect()
+
+  def _response_socket_current_settings(self):
+    if self.subscriber is None:
+      return
+    res = {
+      'method': 'current-settings',
+      'settings': self.settings
+    }
+    res = json.dumps(res)
+    self.subscriber.send(headers={'content-type': 'json'}, body=res)
+  
+  def _response_socket_current_status(self):
+    if self.subscriber is None:
+      return
+    res = {
+      'method': 'current-status',
+      'status': self.read()
+    }
+    res = json.dumps(res)
+    self.subscriber.send(headers={'content-type': 'json'}, body=res)
 
   def exit(self):
     self._stop_controllers()
@@ -71,6 +90,13 @@ class FarmSupervisor(Supervisor):
   def _stop_socket(self):
     if self.subscriber:
       self.subscriber.close()
+
+  def read(self):
+    return {
+      "type": self.type,
+      "uuid": self.uuid,
+      "controllers": [x.read() for x in self.controllers]
+    }
 
   @staticmethod
   def get_websocket_path(config = {}):

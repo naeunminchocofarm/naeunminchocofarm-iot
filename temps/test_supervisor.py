@@ -38,6 +38,7 @@ sv = FarmSupervisor.from_config(supervisor_config)
 try:
   sv.start()
   time.sleep(10)
+  print(sv.read())
 except Exception as error:
   print(type(error))
   print(error)

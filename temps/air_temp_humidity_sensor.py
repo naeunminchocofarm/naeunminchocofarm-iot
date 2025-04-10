@@ -6,18 +6,20 @@ class AirTempHumiditySensor(Sensor):
   def __init__(self, type, uuid, gpio, interval_seconds=1):
     super().__init__(type, uuid, interval_seconds)
     self.gpio = gpio
+    self.is_ready = False
 
   def _init_resources(self):
     self.dhtDevice = self._createDhtDevice()
+    self.is_ready = True
   
-  def _read(self):
+  def read(self):
     for i in range(10):
       try:
-        temperature_c = self.dhtDevice.temperature
-        humidity_percentage = self.dhtDevice.humidity
         return {
-          "air_temp": temperature_c,
-          "humidity": humidity_percentage
+          'type': self.type,
+          'uuid': self.uuid,
+          'air_temp': self.dhtDevice.temperature,
+          'humidity': self.dhtDevice.humidity
         }
       except RuntimeError as e:
         print(type(e))
@@ -25,10 +27,10 @@ class AirTempHumiditySensor(Sensor):
       except TypeError as e:
         print(type(e))
         print(e)
-    
-    return {"air_temp": 0.0, "humidity": 0.0}
+    return {}
   
   def _cleanup_resources(self):
+    self.is_ready = False
     self.dhtDevice.exit()
 
   def _createDhtDevice(self):

@@ -14,9 +14,9 @@ class Sensor(ABC):
   def subscribe(self, callback):
     self.subscribers.append(callback)
 
-  def _notify(self, value):
+  def _notify(self, status):
     for callback in self.subscribers:
-      callback(value, self.type, self.uuid)
+      callback(status)
 
   def start(self):
     self._init_resources()
@@ -29,8 +29,7 @@ class Sensor(ABC):
     while not self.stop_event.is_set():
       now = time.time()
       if next_time <= now:
-        value = self._read()
-        self._notify(value);
+        self._notify(self.read());
         next_time += self.interval_seconds
       time.sleep(1)
 
@@ -49,7 +48,7 @@ class Sensor(ABC):
     pass
 
   @abstractmethod
-  def _read(self) -> dict:
+  def read(self) -> dict:
     pass
 
   @staticmethod

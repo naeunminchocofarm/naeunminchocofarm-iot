@@ -4,7 +4,6 @@ import threading
 class SectionController(Controller):
   def __init__(self, type, uuid, sensors=[], actuators=[], interval_seconds = 60):
     super().__init__(type, uuid, sensors, actuators, interval_seconds)
-    self.sensors_status = {}
 
   @staticmethod
   def from_config(config={}):
@@ -28,18 +27,17 @@ class SectionController(Controller):
         print(type(err))
         print(err)
 
-  def _handle_sensor_value(self, value, type, uuid):
-    threading.Thread(target=self._automatic_control_actuators, args=(value, type), daemon=True).start()
-    self._save_sensors_status(value, type, uuid)
+  def _handle_sensor_value(self, sensor_status):
+    threading.Thread(target=self._automatic_control_actuators, args=(sensor_status,), daemon=True).start()
 
-  def _automatic_control_actuators(self, sensor_value, sensor_type):
-    match sensor_type:
+  def _automatic_control_actuators(self, sensor_status):
+    match sensor_status.get('type'):
       case 'air_temp_humid':
-        air_temp = sensor_value.get('air_temp')
+        air_temp = sensor_status.get('air_temp')
         min_air_temp = self.settings.get('min_air_temp')
         max_air_temp = self.settings.get('max_air_temp')
         if (air_temp is not None and min_air_temp is not None and max_air_temp is not None):
-          self._automatic_control_led(sensor_value['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
+          self._automatic_control_led(sensor_status['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
 
   def _automatic_control_led(self, air_temp, min_air_temp, max_air_temp):
     if 'led' in self.actuators:
@@ -48,12 +46,6 @@ class SectionController(Controller):
         led.command('off')
       elif max_air_temp <= air_temp:
         led.command('on')
-
-  def _save_sensors_status(self, sensor_value, sensor_type, sensor_uuid):
-    sensor_value.update({
-      "uuid": sensor_uuid
-    })
-    self.sensors_status[sensor_type] = sensor_value
 
   def _start_actuators(self):
     for actuator in self.actuators.values():
@@ -86,15 +78,9 @@ class SectionController(Controller):
       self.actuators[actuator_type].command(action, parameters)
   
   def read(self):
-    actuators_status = {}
-    for actuator in self.actuators.values():
-      status = actuator.read()
-      status.update({
-        "uuid": actuator.uuid
-      })
-      actuators_status[actuator.type] = status
-    result = {
-      "sensors": self.sensors_status,
-      "actuators": actuators_status
+    return {
+      "type": self.type,
+      "uuid": self.uuid,
+      "sensors": [x.read() for x in self.sensors.values()],
+      "actuators": [x.read() for x in self.actuators.values()]
     }
-    return result

@@ -22,7 +22,11 @@ class LedActuator(Actuator):
     pass
 
   def read(self):
-    return {"power": self.power}
+    return {
+      "type": self.type,
+      "uuid": self.uuid,
+      "power": self.power
+    }
   
   @staticmethod
   def from_config(config: dict):

@@ -58,3 +58,7 @@ class Supervisor(ABC):
   @abstractmethod
   def exit(self):
     pass
+
+  @abstractmethod
+  def read(self):
+    pass
