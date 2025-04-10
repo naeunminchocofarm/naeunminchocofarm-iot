@@ -1,8 +1,8 @@
 from controller import Controller
 
 class SectionController(Controller):
-  def __init__(self, type, uuid, settings, sensors=[], actuators=[], interval_seconds = 60):
-    super().__init__(type, uuid, settings, sensors, actuators, interval_seconds)
+  def __init__(self, type, uuid, sensors=[], actuators=[], interval_seconds = 60):
+    super().__init__(type, uuid, sensors, actuators, interval_seconds)
     self.sensors_status = {}
 
   @staticmethod

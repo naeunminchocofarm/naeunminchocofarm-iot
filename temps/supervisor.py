@@ -9,6 +9,8 @@ class Supervisor(ABC):
     self.controllers = controllers
     self.settings = settings
     self.interval_seconds = interval_seconds
+    for controller in self.controllers:
+      controller.update_settings(self.settings)
 
   @staticmethod
   def get_type(config = {}):
