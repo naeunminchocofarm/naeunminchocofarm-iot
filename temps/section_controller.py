@@ -38,7 +38,6 @@ class SectionController(Controller):
         air_temp = sensor_value.get('air_temp')
         min_air_temp = self.settings.get('min_air_temp')
         max_air_temp = self.settings.get('max_air_temp')
-
         if (air_temp is not None and min_air_temp is not None and max_air_temp is not None):
           self._automatic_control_led(sensor_value['air_temp'], self.settings['min_air_temp'], self.settings['max_air_temp'])
 
