@@ -12,7 +12,7 @@ actuators_config = [
   {
     "type": "led",
     "uuid": "test-uuid-2",
-    "gpio": 17
+    "gpio": 4
   }
 ]
 controllers_config = [

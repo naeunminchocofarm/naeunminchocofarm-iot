@@ -1,4 +1,5 @@
 from actuator import Actuator
+import RPi.GPIO as GPIO
 
 class LedActuator(Actuator):
   def __init__(self, type, uuid, gpio):
@@ -8,21 +9,33 @@ class LedActuator(Actuator):
     self.is_started = False
 
   def start(self):
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(self.gpio, GPIO.OUT)
     self.is_started = True
 
   def exit(self):
     self.is_started = False
+    GPIO.cleanup()
 
   def command(self, action, parameters=[]):
     if not self.is_started:
       raise RuntimeError("Actuator must be started before command")
     match action:
       case "on":
-        self.power = 'on'
-        print('led on!')
+        self.turn_on()
       case "off":
-        self.power = 'off'
-        print('led off.')
+        self.turn_off()
+
+  def turn_on(self):
+    self.power = 'on'
+    print('led on!')
+    GPIO.output(self.gpio, 1)
+
+  def turn_off(self):
+    self.power = 'off'
+    print('led off.')
+    GPIO.output(self.gpio, 0)
 
   def read(self):
     return {
