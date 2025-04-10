@@ -3,8 +3,8 @@ from ncf_subscriber import NcfSubscriber, NcfFrame
 import json
 
 class FarmSupervisor(Supervisor):
-  def __init__(self, type, uuid, controllers, settings, interval_seconds, websocket_path):
-    super().__init__(type, uuid, controllers, settings, interval_seconds)
+  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path):
+    super().__init__(type, uuid, controllers, settings_path, interval_seconds)
     self.websocket_path = websocket_path
     self.subscriber = None
 
@@ -15,9 +15,8 @@ class FarmSupervisor(Supervisor):
     interval_seconds = Supervisor.get_interval_seconds(config)
     controllers = Supervisor.get_controllers(config, interval_seconds)
     settings_path = Supervisor.get_settings_path(config)
-    settings = Supervisor.read_settings(settings_path)
     websocket_path = FarmSupervisor.get_websocket_path(config)
-    return FarmSupervisor(type, uuid, controllers, settings, interval_seconds, websocket_path)
+    return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, websocket_path)
       
   def start(self):
     self._start_controllers()

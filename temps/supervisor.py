@@ -3,11 +3,12 @@ from abc import ABC, abstractmethod
 import json
 
 class Supervisor(ABC):
-  def __init__(self, type, uuid, controllers, settings, interval_seconds):
+  def __init__(self, type, uuid, controllers, settings_path, interval_seconds):
     self.type = type
     self.uuid = uuid
     self.controllers = controllers
-    self.settings = settings
+    self.settings_path = settings_path
+    self.settings = Supervisor.read_settings(settings_path)
     self.interval_seconds = interval_seconds
     for controller in self.controllers:
       controller.update_settings(self.settings)
@@ -16,6 +17,11 @@ class Supervisor(ABC):
     self.settings.update(settings)
     for controller in self.controllers:
       controller.update_settings(self.settings)
+    self.save_settings()
+  
+  def save_settings(self):
+    with open(self.settings_path, "w") as file:
+      json.dump(self.settings, file, indent=2)
 
   @staticmethod
   def get_type(config = {}):
