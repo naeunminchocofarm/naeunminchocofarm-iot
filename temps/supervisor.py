@@ -38,8 +38,8 @@ class Supervisor(ABC):
     return result
 
   @staticmethod
-  def get_controllers(config, interval_seconds):
-    return [ControllerFactory.create_controller(x, interval_seconds) for x in config.get("controllers", [])]
+  def get_controllers(config):
+    return [ControllerFactory.create_controller(x) for x in config.get("controllers", [])]
   
   @staticmethod
   def get_interval_seconds(config = {}):

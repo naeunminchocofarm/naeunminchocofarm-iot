@@ -21,7 +21,7 @@ class FarmSupervisor(Supervisor):
     type = Supervisor.get_type(config)
     uuid = Supervisor.get_uuid(config)
     interval_seconds = Supervisor.get_interval_seconds(config)
-    controllers = Supervisor.get_controllers(config, interval_seconds)
+    controllers = Supervisor.get_controllers(config)
     settings_path = Supervisor.get_settings_path(config)
     websocket_path = FarmSupervisor.get_websocket_path(config)
     return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, websocket_path)

@@ -1,19 +1,18 @@
 from controller import Controller
 
 class SectionController(Controller):
-  def __init__(self, type, uuid, interval_seconds, sensors=[], actuators=[]):
+  def __init__(self, type, uuid, sensors=[], actuators=[]):
     super().__init__(type, uuid, sensors, actuators)
-    self.interval_seconds = interval_seconds
     self.sensors_status = {}
     self.actuators_status = {}
   
   @staticmethod
-  def create(config, interval_seconds):
+  def from_config(config):
     type = Controller.get_type(config)
     uuid = Controller.get_uuid(config)
     sensors = Controller.get_sensors(config)
     actuators = Controller.get_actuators(config)
-    return SectionController(type, uuid, interval_seconds, sensors, actuators)
+    return SectionController(type, uuid, sensors, actuators)
   
   def start(self):
     self._start_sensors()
