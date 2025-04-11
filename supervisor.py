@@ -14,6 +14,18 @@ class Supervisor(ABC):
     for controller in self.controllers:
       controller.update_settings(self.settings)
 
+  @abstractmethod
+  def start(self):
+    pass
+
+  @abstractmethod
+  def exit(self):
+    pass
+
+  @abstractmethod
+  def read(self):
+    pass
+
   def update_settings(self, settings):
     self.settings.update(settings)
     for controller in self.controllers:
@@ -61,15 +73,3 @@ class Supervisor(ABC):
   def read_settings(settings_path):
     with open(settings_path, "r") as file:
       return json.load(file)
-  
-  @abstractmethod
-  def start(self):
-    pass
-
-  @abstractmethod
-  def exit(self):
-    pass
-
-  @abstractmethod
-  def read(self):
-    pass
