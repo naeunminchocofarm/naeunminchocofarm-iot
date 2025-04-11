@@ -8,13 +8,14 @@ import datetime
 import pytz
 
 class FarmSupervisor(Supervisor):
-  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path):
+  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path, api_host):
     super().__init__(type, uuid, controllers, settings_path, interval_seconds)
     self.websocket_path = websocket_path
     self.subscriber = None
     self.realtime_thread = None
     self.stop_realtime = threading.Event()
     self.api_server = NcfApiServer()
+    self.api_host = api_host
 
   @staticmethod
   def from_config(config = {}):
@@ -24,7 +25,8 @@ class FarmSupervisor(Supervisor):
     controllers = Supervisor.get_controllers(config)
     settings_path = Supervisor.get_settings_path(config)
     websocket_path = FarmSupervisor.get_websocket_path(config)
-    return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, websocket_path)
+    api_host = FarmSupervisor.get_api_host(config)
+    return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, websocket_path, api_host)
       
   def start(self):
     self._start_controllers()
@@ -141,9 +143,8 @@ class FarmSupervisor(Supervisor):
           })
         case 'pir':
           pass
-
     try:
-      self.api_server.send_sensor_datas(datas)
+      self.api_server.send_sensor_datas(datas, self.api_host)
     except requests.exceptions.ConnectionError as err:
       print(type(err))
       print(err)
@@ -183,4 +184,11 @@ class FarmSupervisor(Supervisor):
     result = config.get('websocketPath')
     if not result:
       raise TypeError('Farm supervisor websocket path cannot be empty')
+    return result
+  
+  @staticmethod
+  def get_api_host(config = {}):
+    result = config.get('apiHost')
+    if result is None:
+      raise TypeError('farm supervisor api host cannot be empty')
     return result
