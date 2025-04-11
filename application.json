@@ -1,44 +1,40 @@
 {
+  "type": "farm",
   "uuid": "0bbd8aa9-02af-4dc6-af0e-c1c5aaa45790",
-  "sections": [
+  "intervalSeconds": 60,
+  "realtimeIntervalSeconds": 5,
+  "settingsPath": "settings.json",
+  "websocketPath": "ws://192.168.30.128:8080/ws",
+  "apiHost": "http://192.168.30.128:8081",
+  "controllers": [
     {
-      "name": "section_1",
+      "type": "section",
       "uuid": "1d8c6420-7247-4dcb-b673-4d9ba84c6274",
       "sensors": [
         {
-          "name": "sensor_1",
+          "type": "air_temp_humid",
           "uuid": "9ed5288c-ac2c-4cdd-a88e-6f17b64d2e95",
-          "model": "DHT22",
-          "target": "air_temperature_humidity",
-          "config": {
-            "gpio": 27,
-            "intervalSeconds": 60
-          }
+          "gpio": 27
         },
         {
-          "name": "sensor_2",
+          "type": "adc",
           "uuid": "988ec2af-a314-47d7-b7d4-53f489d5c6c3",
-          "model": "ADC",
-          "target": "sunshine and soil moisture",
-          "config": {
-            "enableSunshine": true,
-            "sunshineChannel": 0,
-            "enableSoilMoisture": true,
-            "soilMoistureChannel": 1,
-            "intervalSeconds": 60
-          }
+          "ldrChannel": 0,
+          "soilMoistureChannel": 1
         },
         {
-          "name": "sensor_3",
+          "type": "pir",
           "uuid": "664d3be1-f506-465a-8a4b-57b8d978c24d",
-          "model": "PIR",
-          "target": "motion detecting",
-          "config": {
-            "gpio": 17
-          }
+          "gpio": 17
+        }
+      ],
+      "actuators": [
+        {
+          "type": "led",
+          "uuid": "54c747ed-b1de-46d9-a96b-850323aa6b4e",
+          "gpio": 4
         }
       ]
     }
   ]
 }
-

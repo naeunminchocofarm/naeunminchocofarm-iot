@@ -2,8 +2,6 @@ class NcfFrame:
   def __init__(self, command, headers={}, body=""):
     self.command = command
     headers['content-length'] = len(body)
-    if headers.get('content-type') is None:
-      headers['content-type'] = 'text'
     self.headers = headers
     self.body = body
 
