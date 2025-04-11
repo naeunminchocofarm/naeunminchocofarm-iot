@@ -8,8 +8,8 @@ import datetime
 import pytz
 
 class FarmSupervisor(Supervisor):
-  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path, api_host):
-    super().__init__(type, uuid, controllers, settings_path, interval_seconds)
+  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, realtime_interval_seconds, websocket_path, api_host):
+    super().__init__(type, uuid, controllers, settings_path, interval_seconds, realtime_interval_seconds)
     self.websocket_path = websocket_path
     self.subscriber = None
     self.realtime_thread = None
@@ -22,11 +22,12 @@ class FarmSupervisor(Supervisor):
     type = Supervisor.get_type(config)
     uuid = Supervisor.get_uuid(config)
     interval_seconds = Supervisor.get_interval_seconds(config)
+    realtime_interval_seconds = Supervisor.get_realtime_interval_seconds(config)
     controllers = Supervisor.get_controllers(config)
     settings_path = Supervisor.get_settings_path(config)
     websocket_path = FarmSupervisor.get_websocket_path(config)
     api_host = FarmSupervisor.get_api_host(config)
-    return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, websocket_path, api_host)
+    return FarmSupervisor(type, uuid, controllers, settings_path, interval_seconds, realtime_interval_seconds, websocket_path, api_host)
       
   def start(self):
     self._start_controllers()
@@ -93,7 +94,7 @@ class FarmSupervisor(Supervisor):
     next_time = time.time()
     api_time = time.time()
     while not self.stop_realtime.is_set():
-      next_time += 1
+      next_time += self.realtime_interval_seconds
       self._control_controller()
       status = self.read()
       self._send_current_status_to_socket(status)

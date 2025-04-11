@@ -2,9 +2,10 @@
   "type": "farm",
   "uuid": "0bbd8aa9-02af-4dc6-af0e-c1c5aaa45790",
   "intervalSeconds": 60,
+  "realtimeIntervalSeconds": 5,
   "settingsPath": "settings.json",
   "websocketPath": "ws://192.168.30.128:8080/ws",
-  "apiHost": "http://192.168.30.128:8080",
+  "apiHost": "http://192.168.30.128:8081",
   "controllers": [
     {
       "type": "section",

@@ -3,13 +3,14 @@ from abc import ABC, abstractmethod
 import json
 
 class Supervisor(ABC):
-  def __init__(self, type, uuid, controllers, settings_path, interval_seconds):
+  def __init__(self, type, uuid, controllers, settings_path, interval_seconds, realtime_interval_seconds):
     self.type = type
     self.uuid = uuid
     self.controllers = controllers
     self.settings_path = settings_path
     self.settings = Supervisor.read_settings(settings_path)
     self.interval_seconds = interval_seconds
+    self.realtime_interval_seconds = realtime_interval_seconds
     for controller in self.controllers:
       controller.update_settings(self.settings)
 
@@ -44,6 +45,10 @@ class Supervisor(ABC):
   @staticmethod
   def get_interval_seconds(config = {}):
     return config.get("intervalSeconds", 60)
+  
+  @staticmethod
+  def get_realtime_interval_seconds(config = {}):
+    return config.get("realtimeIntervalSeconds", 5)
   
   @staticmethod
   def get_settings_path(config = {}):
