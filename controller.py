@@ -14,6 +14,22 @@ class Controller(ABC):
       self.actuators[actuator.type] = actuator
     self.settings = {}
 
+  @abstractmethod
+  def start(self):
+    pass
+    
+  @abstractmethod
+  def exit(self):
+    pass
+
+  @abstractmethod
+  def read(self) -> dict:
+    pass
+
+  @abstractmethod
+  def control(self):
+    pass
+
   def update_settings(self, settings):
     self.settings.update(settings)
 
@@ -38,23 +54,3 @@ class Controller(ABC):
   @staticmethod
   def get_actuators(config = {}):
     return list(map(ActuatorFactory.create_actuator, config.get("actuators", [])))
-  
-  @abstractmethod
-  def start(self):
-    pass
-    
-  @abstractmethod
-  def exit(self):
-    pass
-
-  # @abstractmethod
-  # def command(self, actuator_type, action, parameters = {}):
-  #   pass
-  
-  @abstractmethod
-  def read(self) -> dict:
-    pass
-
-  @abstractmethod
-  def control(self):
-    pass
