@@ -1,8 +1,11 @@
 from supervisor import Supervisor
 from ncf_subscriber import NcfSubscriber, NcfFrame
+from ncf_api_server import NcfApiServer, requests
 import json
 import time
 import threading
+import datetime
+import pytz
 
 class FarmSupervisor(Supervisor):
   def __init__(self, type, uuid, controllers, settings_path, interval_seconds, websocket_path):
@@ -11,6 +14,7 @@ class FarmSupervisor(Supervisor):
     self.subscriber = None
     self.realtime_thread = None
     self.stop_realtime = threading.Event()
+    self.api_server = NcfApiServer()
 
   @staticmethod
   def from_config(config = {}):
@@ -52,7 +56,7 @@ class FarmSupervisor(Supervisor):
             case 'get-settings':
               self._send_current_settings_to_socket()
             case 'get-status':
-              self._send_current_status_to_socket()
+              self._send_current_status_to_socket(self.read())
 
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
@@ -68,15 +72,14 @@ class FarmSupervisor(Supervisor):
     res = json.dumps(res)
     self.subscriber.send(headers={'content-type': 'json'}, body=res)
   
-  def _send_current_status_to_socket(self):
+  def _send_current_status_to_socket(self, status):
     if self.subscriber is None:
       return
-    res = {
+    data = json.dumps({
       'method': 'current-status',
-      'status': self.read()
-    }
-    res = json.dumps(res)
-    self.subscriber.send(headers={'content-type': 'json'}, body=res)
+      'status': status
+    })
+    self.subscriber.send(headers={'content-type': 'json'}, body=data)
 
   def _start_realtime(self):
     self.stop_realtime.clear()
@@ -84,11 +87,68 @@ class FarmSupervisor(Supervisor):
     self.realtime_thread.start()
 
   def _handle_realtime(self):
+    time.sleep(5)
     next_time = time.time()
+    api_time = time.time()
     while not self.stop_realtime.is_set():
       next_time += 1
-      self._send_current_status_to_socket()
+      self._control_controller()
+      status = self.read()
+      self._send_current_status_to_socket(status)
+      if api_time <= time.time():
+        self._send_current_status_to_api(status)
+        api_time += self.interval_seconds
       time.sleep(max(0, next_time - time.time()))
+
+  def _control_controller(self):
+    for controller in self.controllers:
+      try:
+        controller.control()
+      except:
+        print('An error occurred while controlling the controller.')
+
+  def _send_current_status_to_api(self, status):
+    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+    datas = []
+    sensors_status = [sensor_status for controller_status in status.get('controllers', []) for sensor_status in controller_status.get('sensors', []) ]
+    for sensor_status in sensors_status:
+      match sensor_status.get('type'):
+        case 'air_temp_humid':
+          datas.append({
+            'name': 'air_temp', 
+            'value': sensor_status.get('air_temp', 0.0), 
+            'measured-at': measured_at, 
+            'sensor-uuid': sensor_status.get('uuid', '')
+          })
+          datas.append({
+            'name': 'humidity', 
+            'value': sensor_status.get('humidity', 0.0), 
+            'measured-at': measured_at, 
+            'sensor-uuid': sensor_status.get('uuid', '')
+          })
+        case 'adc':
+          datas.append({
+            'name': 'sunshine', 
+            'value': sensor_status.get('ldr', 0), 
+            'measured-at': measured_at, 
+            'sensor-uuid': sensor_status.get('uuid', '')
+          })
+          datas.append({
+            'name': 'soil_moisture', 
+            'value': sensor_status.get('soil_moisture', 0), 
+            'measured-at': measured_at, 
+            'sensor-uuid': sensor_status.get('uuid', '')
+          })
+        case 'pir':
+          pass
+
+    try:
+      self.api_server.send_sensor_datas(datas)
+    except requests.exceptions.ConnectionError as err:
+      print(type(err))
+      print(err)
+    except:
+      print('An error occurred while requesting the API.')
 
   def exit(self):
     self._stop_realtime()

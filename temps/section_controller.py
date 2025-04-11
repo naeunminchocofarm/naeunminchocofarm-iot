@@ -1,13 +1,11 @@
 from controller import Controller
-import threading
-import time
 
 class SectionController(Controller):
   def __init__(self, type, uuid, interval_seconds, sensors=[], actuators=[]):
     super().__init__(type, uuid, sensors, actuators)
-    self.auto_thread = None
-    self.stop_auto = threading.Event()
     self.interval_seconds = interval_seconds
+    self.sensors_status = {}
+    self.actuators_status = {}
   
   @staticmethod
   def create(config, interval_seconds):
@@ -20,7 +18,6 @@ class SectionController(Controller):
   def start(self):
     self._start_sensors()
     self._start_actuators()
-    self._start_auto_control()
 
   def _start_sensors(self):
     for sensor in self.sensors.values():
@@ -38,50 +35,7 @@ class SectionController(Controller):
         print(type(err))
         print(err)
 
-  def _start_auto_control(self):
-    self.stop_auto.clear()
-    self.auto_thread = threading.Thread(target=self._handle_auto_control)
-    self.auto_thread.start()
-
-  def _handle_auto_control(self):
-    next_time = time.time() + 5
-    while not self.stop_auto.is_set():
-      time.sleep(0.4)
-      if time.time() < next_time:
-        continue
-      next_time += self.interval_seconds
-      for sensor in self.sensors.values():
-        try:
-          self._control_sensor(sensor)
-        except:
-          pass
-
-  def _control_sensor(self, sensor):
-    match sensor.type:
-      case 'air_temp_humid':
-        self._control_air_temp(sensor)
-
-  def _control_air_temp(self, sensor):
-    led = self.actuators.get('led')
-    if led is None:
-      return
-    status = sensor.read()
-    air_temp = status.get('air_temp')
-    if air_temp is None:
-      return
-    min_air_temp = self.settings.get('min_air_temp')
-    if min_air_temp is None:
-      return
-    max_air_temp = self.settings.get('max_air_temp')
-    if max_air_temp is None:
-      return
-    if air_temp <= min_air_temp:
-      led.command('off')
-    elif max_air_temp <= air_temp:
-      led.command('on')
-
   def exit(self):
-    self._stop_auto_control()
     self._exit_actuators()
     self._exit_sensors()
   
@@ -98,20 +52,69 @@ class SectionController(Controller):
         actuator.exit()
       except:
         continue
-
-  def _stop_auto_control(self):
-    self.stop_auto.set()
-    if self.auto_thread:
-      self.auto_thread.join()
-
-  def command(self, actuator_type, action, parameters=...):
-    if actuator_type in self.actuators:
-      self.actuators[actuator_type].command(action, parameters)
   
   def read(self):
     return {
       "type": self.type,
       "uuid": self.uuid,
-      "sensors": [x.read() for x in self.sensors.values()],
-      "actuators": [x.read() for x in self.actuators.values()]
+      "sensors": [x for x in self._get_sensors_status().values()],
+      "actuators": [x for x in self._get_actuators_status().values()]
     }
+  
+  def _get_sensors_status(self):
+    if self.sensors_status == {}:
+      self.sensors_status = self._read_sensors_status()
+    return self.sensors_status
+  
+  def _read_sensors_status(self):
+    result = {}
+    for sensor in self.sensors.values():
+      try:
+        result[sensor.type] = sensor.read()
+      except:
+        pass
+    return result
+  
+  def _get_actuators_status(self):
+    if self.actuators_status == {}:
+      self.actuators_status = self._read_actuators_status()
+    return self.actuators_status
+  
+  def _read_actuators_status(self):
+    result = {}
+    for actuator in self.actuators.values():
+      try:
+        result[actuator.type] = actuator.read()
+      except:
+        pass
+    return result
+  
+  def control(self):
+    for sensor in self.sensors.values():
+      try:
+        sensor_status = sensor.read()
+        self.sensors_status[sensor.type] = sensor_status
+        match sensor.type:
+          case 'air_temp_humid':
+            self._control_air_temp(sensor_status)
+      except:
+        print('An error occurred during control {}'.format(self.uuid))
+    self.actuators_status = self._read_actuators_status()
+
+  def _control_air_temp(self, sensor_status):
+    led = self.actuators.get('led')
+    if led is None:
+      return
+    air_temp = sensor_status.get('air_temp')
+    if air_temp is None:
+      return
+    min_air_temp = self.settings.get('min_air_temp')
+    if min_air_temp is None:
+      return
+    max_air_temp = self.settings.get('max_air_temp')
+    if max_air_temp is None:
+      return
+    if air_temp <= min_air_temp:
+      led.command('off')
+    elif max_air_temp <= air_temp:
+      led.command('on')

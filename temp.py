@@ -1,6 +1,22 @@
-import json
+status = {
+  'controllers': [
+    {
+      'sensors': [
+        1, 2, 3
+      ]
+    },
+    {
+      'sensors': [
+        4, 5
+      ]
+    },
+    {
+      'sensors': [
+        6, 7, 8, 9
+      ]
+    }
+  ]
+}
+data = [sensor_status for controller_status in status.get('controllers', []) for sensor_status in controller_status.get('sensors', []) ]
 
-str = '{"name": "alice", "age": 25.6}'
-data = json.loads(str)
-print('name:', data['name'])
-print('age:', data['age'])
+print(data)

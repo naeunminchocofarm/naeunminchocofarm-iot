@@ -47,10 +47,14 @@ class Controller(ABC):
   def exit(self):
     pass
 
-  @abstractmethod
-  def command(self, actuator_type, action, parameters = {}):
-    pass
+  # @abstractmethod
+  # def command(self, actuator_type, action, parameters = {}):
+  #   pass
   
   @abstractmethod
   def read(self) -> dict:
+    pass
+
+  @abstractmethod
+  def control(self):
     pass
