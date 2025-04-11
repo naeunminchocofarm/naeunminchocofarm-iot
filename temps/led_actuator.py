@@ -29,12 +29,10 @@ class LedActuator(Actuator):
 
   def turn_on(self):
     self.power = 'on'
-    print('led on!')
     GPIO.output(self.gpio, 1)
 
   def turn_off(self):
     self.power = 'off'
-    print('led off.')
     GPIO.output(self.gpio, 0)
 
   def read(self):
