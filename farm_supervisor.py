@@ -72,17 +72,16 @@ class FarmSupervisor(Supervisor):
       'method': 'current-settings',
       'settings': self.settings
     }
-    res = json.dumps(res)
-    self.subscriber.send(headers={'content-type': 'json'}, body=res)
+    self.subscriber.send_json(dict=res)
   
   def _send_current_status_to_socket(self, status):
     if self.subscriber is None:
       return
-    data = json.dumps({
+    data = {
       'method': 'current-status',
       'status': status
-    })
-    self.subscriber.send(headers={'content-type': 'json'}, body=data)
+    }
+    self.subscriber.send_json(dict=data)
 
   def _start_realtime(self):
     self.stop_realtime.clear()

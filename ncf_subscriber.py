@@ -2,6 +2,7 @@ import websocket
 from ncf_frame import NcfFrame
 import threading
 import time
+import json
 
 MIN_RECONNECT_DELAY = 1
 MAX_RECONNECT_DELAY = 30
@@ -85,4 +86,10 @@ class NcfSubscriber:
     def send(self, headers = {}, body = ''):
         headers['destination'] = self.destination
         frame = NcfFrame.createSend(headers, body)
+        _send(self.socket, str(frame))
+
+    def send_json(self, headers = {}, dict = {}):
+        headers['destination'] = self.destination
+        headers['content-type'] = 'json'
+        frame = NcfFrame.createSend(headers, json.dumps(dict))
         _send(self.socket, str(frame))
