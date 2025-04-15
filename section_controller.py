@@ -107,10 +107,11 @@ class SectionController(Controller):
     air_temp = sensor_status.get('air_temp')
     if air_temp is None:
       return
-    min_air_temp = self.settings.get('min_air_temp')
+    air_temp_settings = self.settings.get('air_temp', {});
+    min_air_temp = air_temp_settings.get('min')
     if min_air_temp is None:
       return
-    max_air_temp = self.settings.get('max_air_temp')
+    max_air_temp = air_temp_settings.get('max')
     if max_air_temp is None:
       return
     if air_temp <= min_air_temp:

@@ -1,15 +1,22 @@
 {
-  "min_air_temp": 21.0,
-  "max_air_temp": 24.0,
-  "enable_air_temp": true,
-  "min_humidity": 30.0,
-  "max_humidity": 40.0,
-  "enable_humidity": true,
-  "min_ldr": 400,
-  "max_ldr": 600,
-  "enable_ldr": true,
-  "min_soil_moisture": 300,
-  "max_soil_moisture": 400,
-  "enable_soil_moisture": true
+  "air_temp": {
+    "min": 21.0,
+    "max": 24.0,
+    "enable": true
+  },
+  "humidity": {
+    "min": 30.0,
+    "max": 40.0,
+    "enable": true
+  },
+  "ldr": {
+    "min": 400,
+    "max": 600,
+    "enable": true
+  },
+  "soil_moisture": {
+    "min": 300,
+    "max": 400,
+    "enable": true
+  }
 }
-
