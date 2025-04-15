@@ -41,15 +41,15 @@ class AdcSensor(Sensor):
         "name": "ldr",
         "value": self._read_ldr_value(),
         "measured-at": measured_at,
-        "sensor-uuid": self.uuid,
-        "sensor-type": self.type
+        "uuid": self.uuid,
+        "type": self.type
       },
       {
         "name": "soil_moisture",
         "value": self._read_soil_moisture(),
         "measured-at": measured_at,
-        "sensor-uuid": self.uuid,
-        "sensor-type": self.type
+        "uuid": self.uuid,
+        "type": self.type
       }
     ]
   

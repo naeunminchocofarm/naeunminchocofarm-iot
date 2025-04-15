@@ -44,15 +44,15 @@ class AirTempHumiditySensor(Sensor):
             "name": "air_temp",
             "value": self.dhtDevice.temperature,
             "measured-at": measured_at,
-            "sensor-uuid": self.uuid,
-            "sensor-type": self.type
+            "uuid": self.uuid,
+            "type": self.type
           },
           {
             "name": "humidity",
             "value": self.dhtDevice.humidity,
             "measured-at": measured_at,
-            "sensor-uuid": self.uuid,
-            "sensor-type": self.type
+            "uuid": self.uuid,
+            "type": self.type
           }
         ]
       except RuntimeError as e:

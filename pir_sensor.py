@@ -37,8 +37,8 @@ class PirSensor(Sensor):
         "name": "motion",
         "value": 'detected' if self.is_detected() else 'not-detected',
         "measured-at": measured_at,
-        "sensor-uuid": self.uuid,
-        "sensor-type": self.type
+        "uuid": self.uuid,
+        "type": self.type
       }
     ]
   
