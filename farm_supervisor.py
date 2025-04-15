@@ -4,8 +4,6 @@ from ncf_api_server import NcfApiServer, requests
 import json
 import time
 import threading
-import datetime
-import pytz
 import itertools
 
 class FarmSupervisor(Supervisor):
@@ -60,7 +58,7 @@ class FarmSupervisor(Supervisor):
             case 'get-settings':
               self._send_current_settings_to_socket()
             case 'get-status':
-              self._send_current_status_to_socket(self.read())
+              self._send_current_status_to_socket()
 
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
@@ -75,12 +73,12 @@ class FarmSupervisor(Supervisor):
     }
     self.subscriber.send_json(dict=res)
   
-  def _send_current_status_to_socket(self, status):
+  def _send_current_status_to_socket(self):
     if self.subscriber is None:
       return
     data = {
       'method': 'current-status',
-      'status': status
+      'status': self.get_status()
     }
     self.subscriber.send_json(dict=data)
 
@@ -96,10 +94,9 @@ class FarmSupervisor(Supervisor):
     while not self.stop_realtime.is_set():
       next_time += self.realtime_interval_seconds
       self._control_controller()
-      status = self.read()
-      self._send_current_status_to_socket(status)
+      self._send_current_status_to_socket()
       if api_time <= time.time():
-        self._send_current_status_to_api(status)
+        self._send_current_sensor_datas_to_api()
         api_time += self.interval_seconds
       time.sleep(max(0, next_time - time.time()))
 
@@ -110,7 +107,7 @@ class FarmSupervisor(Supervisor):
       except:
         print('An error occurred while controlling the controller.')
 
-  def _send_current_status_to_api(self, status):
+  def _send_current_sensor_datas_to_api(self):
     try:
       self.api_server.send_sensor_datas(self.read_sensor_datas(), self.api_host)
     except requests.exceptions.ConnectionError as err:
@@ -149,9 +146,13 @@ class FarmSupervisor(Supervisor):
   
   def read_sensor_datas(self):
     return list(itertools.chain.from_iterable(x.read_sensor_datas() for x in self.controllers));
-    # result = [x.read_sensor_datas() for x in self.controllers]
-    # result = [x for sub_list in result for x in sub_list]
-    # return result
+
+  def get_status(self):
+    return {
+      "type": self.type,
+      "uuid": self.uuid,
+      "controllers": [x.get_status() for x in self.controllers]
+    }
 
   @staticmethod
   def get_websocket_path(config = {}):

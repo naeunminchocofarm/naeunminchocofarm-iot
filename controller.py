@@ -31,6 +31,14 @@ class Controller(ABC):
     pass
 
   @abstractmethod
+  def read_actuator_datas(self):
+    pass
+
+  @abstractmethod
+  def get_status(self):
+    pass
+
+  @abstractmethod
   def control(self):
     pass
 

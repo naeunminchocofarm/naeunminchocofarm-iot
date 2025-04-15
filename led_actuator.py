@@ -1,5 +1,7 @@
 from actuator import Actuator
 import RPi.GPIO as GPIO
+import datetime
+import pytz
 
 class LedActuator(Actuator):
   def __init__(self, type, uuid, gpio):
@@ -41,6 +43,18 @@ class LedActuator(Actuator):
       "uuid": self.uuid,
       "power": self.power
     }
+  
+  def read_datas(self):
+    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+    return [
+      {
+        "name": "power",
+        "value": self.power,
+        "measured-at": measured_at,
+        "uuid": self.uuid,
+        "type": self.type
+      }
+    ]
   
   @staticmethod
   def from_config(config: dict):

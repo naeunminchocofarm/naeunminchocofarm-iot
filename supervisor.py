@@ -31,6 +31,10 @@ class Supervisor(ABC):
   def read_sensor_datas(self):
     pass
 
+  @abstractmethod
+  def get_status(self):
+    pass
+
   def update_settings(self, settings):
     Settings.save(self.settings_path, settings)
     self.settings = Settings.load(self.settings_path)

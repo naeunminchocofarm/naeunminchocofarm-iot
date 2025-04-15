@@ -21,6 +21,10 @@ class Actuator(ABC):
   def read(self) -> dict:
     pass
 
+  @abstractmethod
+  def read_datas(self):
+    pass
+
   @staticmethod
   def get_type(config = {}):
     result = config.get("type", None)

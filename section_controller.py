@@ -7,6 +7,7 @@ class SectionController(Controller):
     self.sensors_status = {}
     self.actuators_status = {}
     self.sensor_datas = []
+    self.actuator_datas = []
   
   @staticmethod
   def from_config(config):
@@ -65,6 +66,17 @@ class SectionController(Controller):
   def read_sensor_datas(self):
     return self.sensor_datas
   
+  def read_actuator_datas(self):
+    return self.actuator_datas
+  
+  def get_status(self):
+    return {
+      'type': self.type,
+      'uuid': self.uuid,
+      'sensor_datas': self.sensor_datas,
+      'actuator_datas': self.actuator_datas
+    }
+  
   def _get_sensors_status(self):
     if self.sensors_status == {}:
       self.sensors_status = self._read_sensors_status()
@@ -106,11 +118,9 @@ class SectionController(Controller):
       try:
         sensor_status = sensor.read()
         self.sensors_status[sensor.type] = sensor_status
-        # match sensor.type:
-        #   case 'air_temp_humid':
-        #     self._control_air_temp(sensor_status)
       except:
         print('An error occurred during control {}'.format(self.uuid))
+    self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
     self.actuators_status = self._read_actuators_status()
 
   def _control_air_temp(self, air_temp):
