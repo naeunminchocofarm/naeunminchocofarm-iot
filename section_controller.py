@@ -101,13 +101,17 @@ class SectionController(Controller):
     self.actuators_status = self._read_actuators_status()
 
   def _control_air_temp(self, sensor_status):
+    air_temp_settings = self.settings.get('air_temp', {})
+    enable_air_temp = air_temp_settings.get('enable')
     led = self.actuators.get('led')
     if led is None:
+      return
+    if enable_air_temp is None or not enable_air_temp:
+      led.command('off')
       return
     air_temp = sensor_status.get('air_temp')
     if air_temp is None:
       return
-    air_temp_settings = self.settings.get('air_temp', {});
     min_air_temp = air_temp_settings.get('min')
     if min_air_temp is None:
       return
