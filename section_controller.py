@@ -4,8 +4,6 @@ import itertools
 class SectionController(Controller):
   def __init__(self, type, uuid, sensors=[], actuators=[]):
     super().__init__(type, uuid, sensors, actuators)
-    self.sensors_status = {}
-    self.actuators_status = {}
     self.sensor_datas = []
     self.actuator_datas = []
   
@@ -55,14 +53,6 @@ class SectionController(Controller):
       except:
         continue
   
-  def read(self):
-    return {
-      "type": self.type,
-      "uuid": self.uuid,
-      "sensors": [x for x in self._get_sensors_status().values()],
-      "actuators": [x for x in self._get_actuators_status().values()]
-    }
-  
   def read_sensor_datas(self):
     return self.sensor_datas
   
@@ -77,34 +67,6 @@ class SectionController(Controller):
       'actuator_datas': self.actuator_datas
     }
   
-  def _get_sensors_status(self):
-    if self.sensors_status == {}:
-      self.sensors_status = self._read_sensors_status()
-    return self.sensors_status
-  
-  def _read_sensors_status(self):
-    result = {}
-    for sensor in self.sensors.values():
-      try:
-        result[sensor.type] = sensor.read()
-      except:
-        pass
-    return result
-  
-  def _get_actuators_status(self):
-    if self.actuators_status == {}:
-      self.actuators_status = self._read_actuators_status()
-    return self.actuators_status
-  
-  def _read_actuators_status(self):
-    result = {}
-    for actuator in self.actuators.values():
-      try:
-        result[actuator.type] = actuator.read()
-      except:
-        pass
-    return result
-  
   def control(self):
     self.sensor_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.sensors.values()))
     for data in self.sensor_datas:
@@ -114,14 +76,7 @@ class SectionController(Controller):
             self._control_air_temp(data.get(data.get('value')))
       except:
         print('An error occurred during control {}'.format(data.get('name')))
-    for sensor in self.sensors.values():
-      try:
-        sensor_status = sensor.read()
-        self.sensors_status[sensor.type] = sensor_status
-      except:
-        print('An error occurred during control {}'.format(self.uuid))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
-    self.actuators_status = self._read_actuators_status()
 
   def _control_air_temp(self, air_temp):
     led = self.actuators.get('led')

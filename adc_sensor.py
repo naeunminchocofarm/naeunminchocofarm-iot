@@ -22,16 +22,6 @@ class AdcSensor(Sensor):
     self.spi.close()
     self.spi = None
   
-  def read(self):
-    if not self.is_ready:
-      return {}
-    return {
-      'type': self.type,
-      'uuid': self.uuid,
-      'ldr': self._read_ldr_value(),
-      'soil_moisture': self._read_soil_moisture()
-    }
-  
   def read_datas(self):
     if not self.is_ready:
       return []

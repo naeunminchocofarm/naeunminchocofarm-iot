@@ -14,10 +14,6 @@ class Sensor(ABC):
     pass
 
   @abstractmethod
-  def read(self) -> dict:
-    pass
-
-  @abstractmethod
   def read_datas(self):
     pass
 

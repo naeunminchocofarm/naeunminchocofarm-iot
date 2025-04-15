@@ -19,15 +19,6 @@ class PirSensor(Sensor):
     self.is_ready = False
     GPIO.cleanup()
   
-  def read(self):
-    if not self.is_ready:
-      return {}
-    return {
-      "type": self.type,
-      "uuid": self.uuid,
-      "motion": 'detected' if self.is_detected() else 'not-detected'
-    }
-  
   def read_datas(self):
     if not self.is_ready:
       return []

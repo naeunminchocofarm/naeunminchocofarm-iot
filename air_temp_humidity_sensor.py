@@ -14,25 +14,6 @@ class AirTempHumiditySensor(Sensor):
     self.dhtDevice = self._createDhtDevice()
     self.is_ready = True
 
-  def read(self):
-    if not self.is_ready:
-      return {}
-    for i in range(5):
-      try:
-        return {
-          'type': self.type,
-          'uuid': self.uuid,
-          'air_temp': self.dhtDevice.temperature,
-          'humidity': self.dhtDevice.humidity
-        }
-      except RuntimeError as e:
-        print(type(e))
-        print(e)
-      except TypeError as e:
-        print(type(e))
-        print(e)
-    return {}
-  
   def read_datas(self):
     measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
     if not self.is_ready:

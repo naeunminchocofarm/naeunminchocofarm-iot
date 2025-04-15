@@ -24,10 +24,6 @@ class Supervisor(ABC):
     pass
 
   @abstractmethod
-  def read(self):
-    pass
-
-  @abstractmethod
   def read_sensor_datas(self):
     pass
 

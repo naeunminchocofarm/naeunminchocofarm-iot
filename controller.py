@@ -23,10 +23,6 @@ class Controller(ABC):
     pass
 
   @abstractmethod
-  def read(self) -> dict:
-    pass
-
-  @abstractmethod
   def read_sensor_datas(self):
     pass
 

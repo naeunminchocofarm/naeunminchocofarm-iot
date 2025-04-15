@@ -137,13 +137,6 @@ class FarmSupervisor(Supervisor):
     if self.realtime_thread:
       self.realtime_thread.join()
 
-  def read(self):
-    return {
-      "type": self.type,
-      "uuid": self.uuid,
-      "controllers": [x.read() for x in self.controllers]
-    }
-  
   def read_sensor_datas(self):
     return list(itertools.chain.from_iterable(x.read_sensor_datas() for x in self.controllers));
 

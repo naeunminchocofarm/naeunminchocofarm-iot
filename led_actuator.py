@@ -37,13 +37,6 @@ class LedActuator(Actuator):
     self.power = 'off'
     GPIO.output(self.gpio, 0)
 
-  def read(self):
-    return {
-      "type": self.type,
-      "uuid": self.uuid,
-      "power": self.power
-    }
-  
   def read_datas(self):
     measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
     return [
