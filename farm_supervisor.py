@@ -6,6 +6,7 @@ import time
 import threading
 import datetime
 import pytz
+import itertools
 
 class FarmSupervisor(Supervisor):
   def __init__(self, type, uuid, controllers, settings_path, interval_seconds, realtime_interval_seconds, websocket_path, api_host):
@@ -110,41 +111,8 @@ class FarmSupervisor(Supervisor):
         print('An error occurred while controlling the controller.')
 
   def _send_current_status_to_api(self, status):
-    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
-    datas = []
-    sensors_status = [sensor_status for controller_status in status.get('controllers', []) for sensor_status in controller_status.get('sensors', []) ]
-    for sensor_status in sensors_status:
-      match sensor_status.get('type'):
-        case 'air_temp_humid':
-          datas.append({
-            'name': 'air_temp', 
-            'value': sensor_status.get('air_temp', 0.0), 
-            'measured-at': measured_at, 
-            'sensor-uuid': sensor_status.get('uuid', '')
-          })
-          datas.append({
-            'name': 'humidity', 
-            'value': sensor_status.get('humidity', 0.0), 
-            'measured-at': measured_at, 
-            'sensor-uuid': sensor_status.get('uuid', '')
-          })
-        case 'adc':
-          datas.append({
-            'name': 'sunshine', 
-            'value': sensor_status.get('ldr', 0), 
-            'measured-at': measured_at, 
-            'sensor-uuid': sensor_status.get('uuid', '')
-          })
-          datas.append({
-            'name': 'soil_moisture', 
-            'value': sensor_status.get('soil_moisture', 0), 
-            'measured-at': measured_at, 
-            'sensor-uuid': sensor_status.get('uuid', '')
-          })
-        case 'pir':
-          pass
     try:
-      self.api_server.send_sensor_datas(datas, self.api_host)
+      self.api_server.send_sensor_datas(self.read_sensor_datas(), self.api_host)
     except requests.exceptions.ConnectionError as err:
       print(type(err))
       print(err)
@@ -178,6 +146,12 @@ class FarmSupervisor(Supervisor):
       "uuid": self.uuid,
       "controllers": [x.read() for x in self.controllers]
     }
+  
+  def read_sensor_datas(self):
+    return list(itertools.chain.from_iterable(x.read_sensor_datas() for x in self.controllers));
+    # result = [x.read_sensor_datas() for x in self.controllers]
+    # result = [x for sub_list in result for x in sub_list]
+    # return result
 
   @staticmethod
   def get_websocket_path(config = {}):

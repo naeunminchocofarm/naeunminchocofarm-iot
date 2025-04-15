@@ -1,5 +1,7 @@
 from sensor import Sensor
 import RPi.GPIO as GPIO
+import datetime
+import pytz
 
 class PirSensor(Sensor):
   def __init__(self, type, uuid, gpio):
@@ -25,6 +27,19 @@ class PirSensor(Sensor):
       "uuid": self.uuid,
       "motion": 'detected' if self.is_detected() else 'not-detected'
     }
+  
+  def read_datas(self):
+    if not self.is_ready:
+      return []
+    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+    return [
+      {
+        "name": "motion",
+        "value": 'detected' if self.is_detected() else 'not-detected',
+        "measured-at": measured_at,
+        "sensor-uuid": self.uuid
+      }
+    ]
   
   def is_detected(self):
     return GPIO.input(self.gpio) == 1

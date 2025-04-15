@@ -1,6 +1,8 @@
 from sensor import Sensor
 import board
 import adafruit_dht
+import datetime
+import pytz
 
 class AirTempHumiditySensor(Sensor):
   def __init__(self, type, uuid, gpio):
@@ -30,6 +32,34 @@ class AirTempHumiditySensor(Sensor):
         print(type(e))
         print(e)
     return {}
+  
+  def read_datas(self):
+    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+    if not self.is_ready:
+      return []
+    for i in range(5):
+      try:
+        return [
+          {
+            "name": "air_temp",
+            "value": self.dhtDevice.temperature,
+            "measured-at": measured_at,
+            "sensor-uuid": self.uuid
+          },
+          {
+            "name": "humidity",
+            "value": self.dhtDevice.humidity,
+            "measured-at": measured_at,
+            "sensor-uuid": self.uuid
+          }
+        ]
+      except RuntimeError as e:
+        print(type(e))
+        print(e)
+      except TypeError as e:
+        print(type(e))
+        print(e)
+    return []
   
   def exit(self):
     self.is_ready = False

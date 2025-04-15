@@ -1,5 +1,7 @@
 from sensor import Sensor
 import spidev
+import datetime
+import pytz
 
 class AdcSensor(Sensor):
   def __init__(self, type, uuid, ldr_channel, soil_moisture_channel):
@@ -29,6 +31,25 @@ class AdcSensor(Sensor):
       'ldr': self._read_ldr_value(),
       'soil_moisture': self._read_soil_moisture()
     }
+  
+  def read_datas(self):
+    if not self.is_ready:
+      return []
+    measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
+    return [
+      {
+        "name": "ldr",
+        "value": self._read_ldr_value(),
+        "measured-at": measured_at,
+        "sensor-uuid": self.uuid
+      },
+      {
+        "name": "soil_moisture",
+        "value": self._read_soil_moisture(),
+        "measured-at": measured_at,
+        "sensor-uuid": self.uuid
+      }
+    ]
   
   def _read_ldr_value(self):
     return self._read_channel(self.ldr_channel)

@@ -27,6 +27,10 @@ class Controller(ABC):
     pass
 
   @abstractmethod
+  def read_sensor_datas(self):
+    pass
+
+  @abstractmethod
   def control(self):
     pass
 
