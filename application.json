@@ -30,9 +30,14 @@
       ],
       "actuators": [
         {
-          "type": "led",
+          "type": "cooler_led",
           "uuid": "54c747ed-b1de-46d9-a96b-850323aa6b4e",
           "gpio": 4
+        },
+        {
+          "type": "night_light",
+          "uuid": "5dcc591b-e042-45e1-bf35-434a5b76cd40",
+          "gpio": 6
         }
       ]
     }
