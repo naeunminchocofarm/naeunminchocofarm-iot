@@ -5,7 +5,7 @@
   "realtimeIntervalSeconds": 5,
   "settingsPath": "settings.json",
   "websocketPath": "ws://192.168.30.128:8080/ws",
-  "apiHost": "http://192.168.30.128:8081",
+  "apiHost": "http://192.168.30.128:8080",
   "controllers": [
     {
       "type": "section",
