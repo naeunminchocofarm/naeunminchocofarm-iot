@@ -74,12 +74,14 @@ class SectionController(Controller):
         match data.get('name'):
           case 'air_temp':
             self._control_air_temp(data.get('value'))
+          case 'ldr':
+            self._control_ldr(data.get('value'))
       except:
         print('An error occurred during control {}'.format(data.get('name')))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
 
   def _control_air_temp(self, air_temp):
-    led = self.actuators.get('led')
+    led = self.actuators.get('cooler_led')
     if led is None:
       return
     if air_temp is None:
@@ -97,4 +99,25 @@ class SectionController(Controller):
     max_air_temp = air_temp_settings.get('max')
     if max_air_temp is not None and max_air_temp <= air_temp:
       led.command('on')
+      return
+    
+  def _control_ldr(self, ldr):
+    led = self.actuators.get('night_light')
+    if led is None:
+      return
+    if ldr is None:
+      led.command('off')
+      return
+    night_light_settings = self.settings.get('ldr', {})
+    enable_night_light = night_light_settings.get('enable')
+    if enable_night_light is None or not enable_night_light:
+      led.command('off')
+      return
+    min_night_light = night_light_settings.get('min')
+    if min_night_light is not None and ldr <= min_night_light:
+      led.command('on')
+      return
+    max_night_light = night_light_settings.get('max')
+    if max_night_light is not None and max_night_light <= ldr:
+      led.command('off')
       return

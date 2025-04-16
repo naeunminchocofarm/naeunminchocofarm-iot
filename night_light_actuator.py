@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import datetime
 import pytz
 
-class LedActuator(Actuator):
+class NightLightActuator (Actuator):
   def __init__(self, type, uuid, gpio):
     super().__init__(type, uuid)
     self.gpio = gpio
@@ -15,12 +15,13 @@ class LedActuator(Actuator):
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self.gpio, GPIO.OUT)
     self.is_ready = True
-
+    
+  
   def exit(self):
     self.is_ready = False
     GPIO.cleanup()
 
-  def command(self, action, parameters=[]):
+  def command(self, action, parameters=...):
     if not self.is_ready:
       raise RuntimeError("Actuator must be started before command")
     match action:
@@ -41,11 +42,11 @@ class LedActuator(Actuator):
     measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
     return [
       {
-        "name": "cooler_led_power",
-        "value": self.power,
+        "name" : "night_light_power",
+        "value" : self.power,
         "measured-at": measured_at,
-        "uuid": self.uuid,
-        "type": self.type
+        "uuid" : self.uuid,
+        "type" : self.type
       }
     ]
   
@@ -53,8 +54,8 @@ class LedActuator(Actuator):
   def from_config(config: dict):
     type = Actuator.get_type(config)
     uuid = Actuator.get_uuid(config)
-    gpio = LedActuator._get_gpio(config)
-    return LedActuator(type, uuid, gpio)
+    gpio = NightLightActuator._get_gpio(config)
+    return NightLightActuator(type, uuid, gpio)
 
   @staticmethod
   def _get_gpio(config = {}):
