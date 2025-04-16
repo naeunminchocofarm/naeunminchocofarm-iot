@@ -19,7 +19,7 @@
     "max": 400,
     "enable": true
   },
-  "pir": {
+  "motion": {
     "enable": true
   }
 }

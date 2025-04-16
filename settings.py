@@ -21,7 +21,7 @@ class SoilMoistureSettingsSchema(BaseModel):
   max: int
   enable: bool
 
-class PirSettingsSchema(BaseModel):
+class MotionSettingsSchema(BaseModel):
   enable: bool
 
 class SettingsSchema(BaseModel):
@@ -29,8 +29,7 @@ class SettingsSchema(BaseModel):
   humidity: HumiditySettingsSchema
   ldr: LdrSettingsSchema
   soil_moisture: SoilMoistureSettingsSchema
-  pir: PirSettingsSchema
-
+  motion: MotionSettingsSchema
 
 class Settings:
   @staticmethod
