@@ -76,6 +76,8 @@ class SectionController(Controller):
             self._control_air_temp(data.get('value'))
           case 'ldr':
             self._control_ldr(data.get('value'))
+          case 'motion':
+            self._control_pir(data.get('value'))
       except:
         print('An error occurred during control {}'.format(data.get('name')))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
@@ -121,3 +123,20 @@ class SectionController(Controller):
     if max_night_light is not None and max_night_light <= ldr:
       led.command('off')
       return
+    
+  def _control_pir(self, pir):
+    buzzer = self.actuators.get('buzzer')
+    if buzzer is None:
+      return
+    if pir is None:
+      buzzer.command('off')
+      return
+    buzzer_settings = self.settings.get('pir', {})
+    enable_buzzer = buzzer_settings.get('enable')
+    if enable_buzzer is None or not enable_buzzer:
+      buzzer.command('off')
+      return
+    if pir == 'detected':
+      buzzer.command('on')
+    else:
+      buzzer.command('off')
