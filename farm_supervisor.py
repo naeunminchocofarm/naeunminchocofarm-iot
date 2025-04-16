@@ -55,6 +55,8 @@ class FarmSupervisor(Supervisor):
               settings = data.get('settings', {})
               self.update_settings(settings)
               self._send_current_settings_to_socket()
+              self._control_controller()
+              self._send_current_status_to_socket()
             case 'get-settings':
               self._send_current_settings_to_socket()
             case 'get-status':
