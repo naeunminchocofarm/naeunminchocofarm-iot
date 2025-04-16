@@ -38,6 +38,11 @@
           "type": "night_light",
           "uuid": "5dcc591b-e042-45e1-bf35-434a5b76cd40",
           "gpio": 6
+        },
+        {
+          "type": "buzzer",
+          "uuid": "3dc2d14f-5bd3-4c5b-acc7-5b7c5f783fc9",
+          "gpio": 18
         }
       ]
     }

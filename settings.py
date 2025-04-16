@@ -21,11 +21,15 @@ class SoilMoistureSettingsSchema(BaseModel):
   max: int
   enable: bool
 
+class PirSettingsSchema(BaseModel):
+  enable: bool
+
 class SettingsSchema(BaseModel):
   air_temp: AirTempSettingsSchema
   humidity: HumiditySettingsSchema
   ldr: LdrSettingsSchema
   soil_moisture: SoilMoistureSettingsSchema
+  pir: PirSettingsSchema
 
 
 class Settings:

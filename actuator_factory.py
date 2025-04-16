@@ -1,5 +1,6 @@
 from led_actuator import LedActuator
 from night_light_actuator import NightLightActuator
+from buzzer_actuator import BuzzerActuator
 
 class ActuatorFactory:
   @staticmethod
@@ -10,5 +11,7 @@ class ActuatorFactory:
         return LedActuator.from_config(config)
       case "night_light":
         return NightLightActuator.from_config(config)
+      case "buzzer":
+        return BuzzerActuator.from_config(config)
       case _:
         raise TypeError('Unsupported actuator type: {}'.format(type))

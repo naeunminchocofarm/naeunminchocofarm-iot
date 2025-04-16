@@ -18,5 +18,8 @@
     "min": 300,
     "max": 400,
     "enable": true
+  },
+  "pir": {
+    "enable": true
   }
 }
