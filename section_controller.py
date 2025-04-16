@@ -73,7 +73,7 @@ class SectionController(Controller):
       try:
         match data.get('name'):
           case 'air_temp':
-            self._control_air_temp(data.get(data.get('value')))
+            self._control_air_temp(data.get('value'))
       except:
         print('An error occurred during control {}'.format(data.get('name')))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
