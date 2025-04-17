@@ -71,13 +71,16 @@ class SectionController(Controller):
     self.sensor_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.sensors.values()))
     for data in self.sensor_datas:
       try:
+        value = data.get('value')
         match data.get('name'):
           case 'air_temp':
-            self._control_air_temp(data.get('value'))
+            self._control_air_temp(value)
           case 'ldr':
-            self._control_ldr(data.get('value'))
+            self._control_ldr(value)
           case 'motion':
-            self._control_motion(data.get('value'))
+            self._control_motion(value)
+          case 'humidity':
+            self._control_humidity(value)
       except:
         print('An error occurred during control {}'.format(data.get('name')))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
@@ -110,17 +113,17 @@ class SectionController(Controller):
     if ldr is None:
       led.command('off')
       return
-    night_light_settings = self.settings.get('ldr', {})
-    enable_night_light = night_light_settings.get('enable')
-    if enable_night_light is None or not enable_night_light:
+    ldr_settings = self.settings.get('ldr', {})
+    enable_ldr = ldr_settings.get('enable')
+    if enable_ldr is None or not enable_ldr:
       led.command('off')
       return
-    min_night_light = night_light_settings.get('min')
-    if min_night_light is not None and ldr <= min_night_light:
+    min_ldr = ldr_settings.get('min')
+    if min_ldr is not None and ldr <= min_ldr:
       led.command('on')
       return
-    max_night_light = night_light_settings.get('max')
-    if max_night_light is not None and max_night_light <= ldr:
+    max_ldr = ldr_settings.get('max')
+    if max_ldr is not None and max_ldr <= ldr:
       led.command('off')
       return
     
@@ -131,12 +134,31 @@ class SectionController(Controller):
     if pir is None:
       buzzer.command('off')
       return
-    buzzer_settings = self.settings.get('motion', {})
-    enable_buzzer = buzzer_settings.get('enable')
-    if enable_buzzer is None or not enable_buzzer:
+    pir_settings = self.settings.get('motion', {})
+    enable_pir = pir_settings.get('enable')
+    if enable_pir is None or not enable_pir:
       buzzer.command('off')
       return
     if pir == 'detected':
       buzzer.command('on')
     else:
       buzzer.command('off')
+
+  def _control_humidity(self, humidity):
+    ventilator = self.actuators.get('ventilator')
+    if ventilator is None:
+      return
+    if humidity is None:
+      return
+    humidity_settings = self.settings.get('humidity', {})
+    enable_humidity = humidity_settings.get('enable')
+    if enable_humidity is None or not enable_humidity:
+      return
+    min_humidity = humidity_settings.get('min')
+    if min_humidity is not None and humidity <= min_humidity:
+      ventilator.command('off')
+      return
+    max_humidity = humidity_settings.get('max')
+    if max_humidity is not None and max_humidity <= humidity:
+      ventilator.command('on')
+      return

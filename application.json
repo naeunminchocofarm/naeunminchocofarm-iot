@@ -43,6 +43,11 @@
           "type": "buzzer",
           "uuid": "3dc2d14f-5bd3-4c5b-acc7-5b7c5f783fc9",
           "gpio": 18
+        },
+        {
+          "type": "ventilator",
+          "uuid": "25cdfaf0-7e70-4ff1-bab4-dbf1e591e6cf",
+          "gpio": 22
         }
       ]
     }
