@@ -5,8 +5,8 @@
     "enable": true
   },
   "humidity": {
-    "min": 30.0,
-    "max": 40.0,
+    "min": 60.0,
+    "max": 70.0,
     "enable": true
   },
   "ldr": {
