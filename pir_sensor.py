@@ -22,7 +22,6 @@ class PirSensor(Sensor):
     self.measure_thread = threading.Thread(target=self._measure_data, daemon=True)
     self.measure_thread.start()
     self.is_ready = True
-    print('pir is ready')
   
   def exit(self):
     self.is_ready = False
@@ -36,10 +35,10 @@ class PirSensor(Sensor):
   
   def _measure_data(self):
     INTERVAL_SECONDS = 0.4
+    current_is_detected = False
+    time.sleep(1)
     exec_time = time.time()
     while not self.stop_event.is_set() and self.is_ready:
-      exec_time += INTERVAL_SECONDS
-      time.sleep(exec_time - time.time())
       measured_at = datetime.datetime.now().astimezone(pytz.timezone("Asia/Seoul")).isoformat()
       IS_DETECTED = self.is_detected()
       self.current_datas = [
@@ -51,8 +50,11 @@ class PirSensor(Sensor):
           "type": self.type
         }
       ]
-      if (IS_DETECTED):
+      if current_is_detected != IS_DETECTED:
+        current_is_detected = IS_DETECTED
         self.notify(self.current_datas.copy())
+      exec_time += INTERVAL_SECONDS
+      time.sleep(exec_time - time.time())
   
   def is_detected(self):
     return GPIO.input(self.gpio) == 1
