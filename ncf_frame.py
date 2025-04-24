@@ -15,24 +15,18 @@ class NcfFrame:
   def parse(raw_frame = ""):
     lines = raw_frame.split("\n")
     command = lines[0].strip()
-
     index = 1
     headers = {}
-
     while index < len(lines):
       raw_header = lines[index].strip()
       index += 1
-
       if (raw_header == ""): 
         break
-
       [key, value] = raw_header.split(":")
       headers[key] = value
-
     body = ''    
     if (index < len(lines)):
-      body = "\n".join(lines[index:]).strip();
-
+      body = "\n".join(lines[index:]).strip()
     return NcfFrame(command, headers, body)
   
   @staticmethod
