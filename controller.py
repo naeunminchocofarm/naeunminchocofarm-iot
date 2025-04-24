@@ -13,6 +13,7 @@ class Controller(ABC):
     for actuator in actuators:
       self.actuators[actuator.type] = actuator
     self.settings = {}
+    self.sensor_channel_subscribers = []
 
   @abstractmethod
   def start(self):
@@ -38,6 +39,14 @@ class Controller(ABC):
   def control(self):
     pass
 
+  def subscribe_status(self, callback):
+    self.sensor_channel_subscribers.append(callback)
+    return lambda: self.sensor_channel_subscribers.remove(callback)
+  
+  def notify_status(self, data):
+    for callback in self.sensor_channel_subscribers:
+      callback(data)
+  
   def update_settings(self, settings):
     self.settings.update(settings)
 

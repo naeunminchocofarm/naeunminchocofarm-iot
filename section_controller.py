@@ -1,11 +1,14 @@
 from controller import Controller
 import itertools
+import threading
 
 class SectionController(Controller):
   def __init__(self, type, uuid, sensors=[], actuators=[]):
     super().__init__(type, uuid, sensors, actuators)
-    self.sensor_datas = []
     self.actuator_datas = []
+    self.sensor_datas_dict = {}
+    self.unsubscribe_methods = []
+    self.stop_notify_event = threading.Event()
   
   @staticmethod
   def from_config(config):
@@ -18,6 +21,7 @@ class SectionController(Controller):
   def start(self):
     self._start_sensors()
     self._start_actuators()
+    self._subscribe_sensors()
 
   def _start_sensors(self):
     for sensor in self.sensors.values():
@@ -35,9 +39,28 @@ class SectionController(Controller):
         print(type(err))
         print(err)
 
+  def _subscribe_sensors(self):
+    self.unsubscribe_methods = [sensor.subscribe(self._handle_receive_sensor_datas) for sensor in self.sensors.values()]
+
+  def _handle_receive_sensor_datas(self, datas):
+    for data in datas:
+      data_copy = data.copy()
+      self.sensor_datas_dict[data_copy['name']] = data_copy
+    self._notify_current_status(list(self.sensor_datas_dict.values()))
+
+  def _notify_current_status(self, sensor_datas):
+    if self.stop_notify_event.is_set():
+      return
+    self.notify_status(self._create_current_status(sensor_datas, self.actuator_datas))
+
   def exit(self):
+    self._unsubscribe_sensors()
     self._exit_actuators()
     self._exit_sensors()
+
+  def _unsubscribe_sensors(self):
+    for unsubscribe in self.unsubscribe_methods:
+      unsubscribe()
   
   def _exit_sensors(self):
     for sensor in self.sensors.values():
@@ -54,22 +77,31 @@ class SectionController(Controller):
         continue
   
   def read_sensor_datas(self):
-    return self.sensor_datas
+    return list(self.sensor_datas_dict.values())
   
   def read_actuator_datas(self):
     return self.actuator_datas
   
-  def get_status(self):
+  def _create_current_status(self, sensor_datas, actuator_datas):
     return {
       'type': self.type,
       'uuid': self.uuid,
-      'sensor_datas': self.sensor_datas,
-      'actuator_datas': self.actuator_datas
+      'sensor_datas': sensor_datas,
+      'actuator_datas': actuator_datas
     }
+
+  def get_status(self):
+    return self._create_current_status(self.sensor_datas_dict.value(), self.actuator_datas)
+  
+  def _measure_sensors(self):
+    self.stop_notify_event.set()
+    for sensor in self.sensors:
+      sensor.measure()
+    self.stop_notify_event.clear()
   
   def control(self):
-    self.sensor_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.sensors.values()))
-    for data in self.sensor_datas:
+    self._measure_sensors()
+    for data in self.sensor_datas_dict.values():
       try:
         value = data.get('value')
         match data.get('name'):
@@ -84,6 +116,7 @@ class SectionController(Controller):
       except:
         print('An error occurred during control {}'.format(data.get('name')))
     self.actuator_datas = list(itertools.chain.from_iterable(x.read_datas() for x in self.actuators.values()))
+    self.notify_status(self._create_current_status(list(self.sensor_datas_dict.values()), self.actuator_datas))
 
   def _control_air_temp(self, air_temp):
     led = self.actuators.get('cooler_led')

@@ -15,6 +15,8 @@ class FarmSupervisor(Supervisor):
     self.stop_realtime = threading.Event()
     self.api_server = NcfApiServer()
     self.api_host = api_host
+    self.unsubscribe_controllers_status_methods = []
+    self.controllers_status_dict = {}
 
   @staticmethod
   def from_config(config = {}):
@@ -31,7 +33,16 @@ class FarmSupervisor(Supervisor):
   def start(self):
     self._start_controllers()
     self._start_socket()
+    self._subscribe_controllers_status()
     self._start_realtime()
+
+  def _subscribe_controllers_status(self):
+    self.unsubscribe_controllers_status_methods = [controller.subscribe_status(self._handle_receive_controller_status) for controller in self.controllers]
+
+  def _handle_receive_controller_status(self, controller_status):
+    status_copy = controller_status.copy()
+    self.controllers_status_dict[status_copy['uuid']] = status_copy
+    self._send_current_status_to_socket(self._create_status(list(self.controllers_status_dict.values())))
 
   def _start_controllers(self):
     for controller in self.controllers:
@@ -56,11 +67,11 @@ class FarmSupervisor(Supervisor):
               self.update_settings(settings)
               self._send_current_settings_to_socket()
               self._control_controller()
-              self._send_current_status_to_socket()
+              self._send_current_status_to_socket(self.get_status())
             case 'get-settings':
               self._send_current_settings_to_socket()
             case 'get-status':
-              self._send_current_status_to_socket()
+              self._send_current_status_to_socket(self.get_status())
 
     self.subscriber.on_open = _on_open
     self.subscriber.on_message = _on_message
@@ -75,12 +86,12 @@ class FarmSupervisor(Supervisor):
     }
     self.subscriber.send_json(dict=res)
   
-  def _send_current_status_to_socket(self):
+  def _send_current_status_to_socket(self, status):
     if self.subscriber is None:
       return
     data = {
       'method': 'current-status',
-      'status': self.get_status()
+      'status': status
     }
     self.subscriber.send_json(dict=data)
 
@@ -96,7 +107,7 @@ class FarmSupervisor(Supervisor):
     while not self.stop_realtime.is_set():
       next_time += self.realtime_interval_seconds
       self._control_controller()
-      self._send_current_status_to_socket()
+      self._send_current_status_to_socket(self.get_status())
       if api_time <= time.time():
         self._send_current_sensor_datas_to_api()
         api_time += self.interval_seconds
@@ -120,8 +131,13 @@ class FarmSupervisor(Supervisor):
 
   def exit(self):
     self._stop_realtime()
+    self._unsubscribe_controllers_status()
     self._stop_socket()
     self._stop_controllers()
+
+  def _unsubscribe_controllers_status(self):
+    for unsubscribe in self.unsubscribe_controllers_status_methods:
+      unsubscribe()
   
   def _stop_controllers(self):
     for controller in self.controllers:
@@ -140,14 +156,18 @@ class FarmSupervisor(Supervisor):
       self.realtime_thread.join()
 
   def read_sensor_datas(self):
-    return list(itertools.chain.from_iterable(x.read_sensor_datas() for x in self.controllers));
-
-  def get_status(self):
+    return list(itertools.chain.from_iterable(x.read_sensor_datas() for x in self.controllers))
+  
+  def _create_status(self, controllers_status):
     return {
       "type": self.type,
       "uuid": self.uuid,
-      "controllers": [x.get_status() for x in self.controllers]
+      "controllers": controllers_status
     }
+
+  def get_status(self):
+    return self._create_status(list(self.controllers_status_dict.values()))
+    # return self._create_status([x.get_status() for x in self.controllers])
 
   @staticmethod
   def get_websocket_path(config = {}):

@@ -4,6 +4,7 @@ class Sensor(ABC):
   def __init__(self, type, uuid):
     self.type = type
     self.uuid = uuid
+    self.subscribers = []
 
   @abstractmethod
   def start(self):
@@ -16,6 +17,17 @@ class Sensor(ABC):
   @abstractmethod
   def read_datas(self):
     pass
+
+  def notify(self, data):
+    for cb in self.subscribers:
+      cb(data)
+
+  def subscribe(self, callback):
+    self.subscribers.append(callback)
+    return lambda: self.subscribers.remove(callback)
+
+  def measure(self):
+    self.notify(self.read_datas())
 
   @staticmethod
   def get_type(config = {}):
