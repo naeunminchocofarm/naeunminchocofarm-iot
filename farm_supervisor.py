@@ -115,10 +115,7 @@ class FarmSupervisor(Supervisor):
 
   def _control_controller(self):
     for controller in self.controllers:
-      try:
         controller.control()
-      except:
-        print('An error occurred while controlling the controller.')
 
   def _send_current_sensor_datas_to_api(self):
     try:

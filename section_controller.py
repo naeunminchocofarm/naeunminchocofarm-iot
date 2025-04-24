@@ -95,7 +95,7 @@ class SectionController(Controller):
   
   def _measure_sensors(self):
     self.stop_notify_event.set()
-    for sensor in self.sensors:
+    for sensor in self.sensors.values():
       sensor.measure()
     self.stop_notify_event.clear()
   
