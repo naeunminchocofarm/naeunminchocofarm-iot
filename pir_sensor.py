@@ -22,6 +22,7 @@ class PirSensor(Sensor):
     self.measure_thread = threading.Thread(target=self._measure_data, daemon=True)
     self.measure_thread.start()
     self.is_ready = True
+    print('pir is ready')
   
   def exit(self):
     self.is_ready = False
