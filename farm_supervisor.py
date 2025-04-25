@@ -1,7 +1,6 @@
 from supervisor import Supervisor
-from ncf_subscriber import NcfSubscriber, NcfFrame
 from ncf_api_server import NcfApiServer, requests
-import json
+from supervisor_socket_manager import SupervisorSocketManager
 import time
 import threading
 import itertools
@@ -17,6 +16,7 @@ class FarmSupervisor(Supervisor):
     self.api_host = api_host
     self.unsubscribe_controllers_status_methods = []
     self.controllers_status_dict = {}
+    self.supervisor_socket_manager = SupervisorSocketManager(websocket_path, self.uuid)
 
   @staticmethod
   def from_config(config = {}):
@@ -42,7 +42,7 @@ class FarmSupervisor(Supervisor):
   def _handle_receive_controller_status(self, controller_status):
     status_copy = controller_status.copy()
     self.controllers_status_dict[status_copy['uuid']] = status_copy
-    self._send_current_status_to_socket(self._create_status(list(self.controllers_status_dict.values())))
+    self.supervisor_socket_manager.send_supervisor_status(self.get_status())
 
   def _start_controllers(self):
     for controller in self.controllers:
@@ -53,47 +53,15 @@ class FarmSupervisor(Supervisor):
         print(err)
 
   def _start_socket(self):
-    self.subscriber = NcfSubscriber(self.websocket_path, self.uuid)
-    def _on_open(subs):
-      self.subscriber.subscribe()
-
-    def _on_message(subs, frame: NcfFrame):
-      match frame.headers.get('content-type'):
-        case 'json':
-          data = json.loads(frame.body)
-          match data.get('method'):
-            case 'update-settings':
-              settings = data.get('settings', {})
-              self.update_settings(settings)
-              self._send_current_settings_to_socket()
-              self._control_controller()
-              self._send_current_status_to_socket(self.get_status())
-            case 'get-settings':
-              self._send_current_settings_to_socket()
-            case 'get-status':
-              self._send_current_status_to_socket(self.get_status())
-
-    self.subscriber.on_open = _on_open
-    self.subscriber.on_message = _on_message
-    self.subscriber.connect()
-
-  def _send_current_settings_to_socket(self):
-    if self.subscriber is None:
-      return
-    res = {
-      'method': 'current-settings',
-      'settings': self.settings
-    }
-    self.subscriber.send_json(dict=res)
-  
-  def _send_current_status_to_socket(self, status):
-    if self.subscriber is None:
-      return
-    data = {
-      'method': 'current-status',
-      'status': status
-    }
-    self.subscriber.send_json(dict=data)
+    self.supervisor_socket_manager.settings_provider = lambda: self.settings
+    self.supervisor_socket_manager.status_providor = self.get_status
+    def _on_update_settings(settings):
+      self.update_settings(settings)
+      self.supervisor_socket_manager.send_supervisor_settings(self.settings)
+      self._control_controller()
+      self.supervisor_socket_manager.send_supervisor_status(self.get_status())
+    self.supervisor_socket_manager.on_update_settings = _on_update_settings
+    self.supervisor_socket_manager.start()
 
   def _start_realtime(self):
     self.stop_realtime.clear()
@@ -107,7 +75,7 @@ class FarmSupervisor(Supervisor):
     while not self.stop_realtime.is_set():
       next_time += self.realtime_interval_seconds
       self._control_controller()
-      self._send_current_status_to_socket(self.get_status())
+      self.supervisor_socket_manager.send_supervisor_status(self.get_status())
       if api_time <= time.time():
         self._send_current_sensor_datas_to_api()
         api_time += self.interval_seconds
@@ -144,8 +112,7 @@ class FarmSupervisor(Supervisor):
         continue
 
   def _stop_socket(self):
-    if self.subscriber:
-      self.subscriber.close()
+    self.supervisor_socket_manager.exit()
 
   def _stop_realtime(self):
     self.stop_realtime.set()
@@ -164,7 +131,6 @@ class FarmSupervisor(Supervisor):
 
   def get_status(self):
     return self._create_status(list(self.controllers_status_dict.values()))
-    # return self._create_status([x.get_status() for x in self.controllers])
 
   @staticmethod
   def get_websocket_path(config = {}):

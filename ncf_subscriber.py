@@ -21,6 +21,8 @@ class NcfSubscriber:
         self.destination = destination
         self.socket = None
         self.on_message = lambda subscriber, frame: None
+        self.on_text = lambda subscriber, frame: None
+        self.on_json = lambda subscriber, frame: None
         self.on_subscribe_success = lambda subscriber, frame: None
         self.on_subscribe_faild = lambda subscriber, frame: None
         self.on_open = lambda subscriber: None
@@ -58,6 +60,11 @@ class NcfSubscriber:
             match frame.command:
                 case 'MESSAGE':
                     self.on_message(self, frame)
+                    match frame.headers.get('content-type'):
+                        case 'text':
+                            self.on_text(self, frame)
+                        case 'json':
+                            self.on_json(self, frame)
                 case 'SUBSCRIBE_SUCCESS':
                     self.on_subscribe_success(self, frame)
                 case 'SUBSCRIBE_FAILD':
