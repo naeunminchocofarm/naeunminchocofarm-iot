@@ -7,7 +7,7 @@ import inspect
 import asyncio
 
 MIN_RECONNECT_DELAY = 1
-MAX_RECONNECT_DELAY = 60
+MAX_RECONNECT_DELAY = 30
 
 class NcfSocketClient:
   def __init__(self, path):
@@ -24,6 +24,7 @@ class NcfSocketClient:
     self.on_subscribe_failed = lambda frame: None
     self.access_token_provider = lambda: ''
     self._is_exit = False
+    self.destinations = []
 
   def connect(self):
     threading.Thread(target=self.run_forever, daemon=True).start()
@@ -44,12 +45,15 @@ class NcfSocketClient:
 
   def run_forever(self):
     print('trying to connect websocket')
+    self.destinations = []
     self.socket = websocket.WebSocketApp(self.path)
+
     def on_open(ws):
       self.reconnect_delay = MIN_RECONNECT_DELAY
       print('websocket is opened')
       self.on_open(self)
       self._handshake()
+
     def on_message(ws, message):
       frame = NcfFrame.parse(message)
       match frame.command:
@@ -67,9 +71,11 @@ class NcfSocketClient:
             case 'json':
               self.on_json(self, frame)
         case 'SUBSCRIBE_SUCCESS':
+          self.destinations.append(frame.headers['destination'])
           self.on_subscribe_success(frame)
         case 'SUBSCRIBE_FAILED':
           self.on_subscribe_failed(frame)
+
     def on_close(ws, status, msg):
       print('websocket is closed')
       self.on_close(self, status, msg)
@@ -88,8 +94,11 @@ class NcfSocketClient:
     self.socket.run_forever()
 
   def close(self):
+    self._is_exit = True
     if self.socket and self.socket.sock and self.socket.sock.connected:
-      self._is_exit = True
+      for destination in self.destinations:
+        self.unsubscribe(destination)
+      self.destinations = []
       self.socket.sock.close()
       self.socket = None
   
