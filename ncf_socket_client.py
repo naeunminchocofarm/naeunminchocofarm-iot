@@ -20,6 +20,8 @@ class NcfSocketClient:
     self.on_close = lambda client, status, msg: None
     self.on_handshake_success = lambda client, frame: None
     self.on_handshake_failed = lambda frame: None
+    self.on_subscribe_success = lambda frame: None
+    self.on_subscribe_failed = lambda frame: None
     self.access_token_provider = lambda: ''
     self._is_exit = False
 
@@ -32,14 +34,7 @@ class NcfSocketClient:
   
   def _handshake(self):
     def _handshake_task():
-      access_token = self.access_token_provider()
-      if inspect.isawaitable(access_token):
-        loop = asyncio.new_event_loop()
-        try:
-          asyncio.set_event_loop(loop)
-          access_token = loop.run_until_complete(access_token)
-        finally:
-          loop.close()
+      access_token = self._get_access_token()
       headers = {
         'Authorization': 'Bearer {}'.format(access_token)
       }
@@ -71,6 +66,10 @@ class NcfSocketClient:
               self.on_text(self, frame)
             case 'json':
               self.on_json(self, frame)
+        case 'SUBSCRIBE_SUCCESS':
+          self.on_subscribe_success(frame)
+        case 'SUBSCRIBE_FAILED':
+          self.on_subscribe_failed(frame)
     def on_close(ws, status, msg):
       print('websocket is closed')
       self.on_close(self, status, msg)
@@ -94,7 +93,28 @@ class NcfSocketClient:
       self.socket.sock.close()
       self.socket = None
   
+  def _get_access_token(self):
+    access_token = self.access_token_provider()
+    if inspect.isawaitable(access_token):
+      loop = asyncio.new_event_loop()
+      try:
+        asyncio.set_event_loop(loop)
+        access_token = loop.run_until_complete(access_token)
+      finally:
+        loop.close()
+    return access_token
+  
   def subscribe(self, destination):
+    def _subscribe_task():
+      access_token = self._get_access_token()
+      headers = {
+        'Authorization': 'Bearer {}'.format(access_token),
+        'destination': destination
+      }
+      frame = NcfFrame('SUBSCRIBE', headers=headers)
+      self.send_frame(frame)
+    threading.Thread(target=_subscribe_task, daemon=True).start()
+
     frame = NcfFrame.createSubscribe(destination)
     self.send_frame(frame)
 
