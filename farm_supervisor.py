@@ -54,7 +54,7 @@ class FarmSupervisor(Supervisor):
 
   def _start_socket(self):
     self.supervisor_socket_manager.settings_provider = lambda: self.settings
-    self.supervisor_socket_manager.status_providor = self.get_status
+    self.supervisor_socket_manager.status_provider = self.get_status
     def _on_update_settings(settings):
       self.update_settings(settings)
       self.supervisor_socket_manager.send_supervisor_settings(self.settings)
