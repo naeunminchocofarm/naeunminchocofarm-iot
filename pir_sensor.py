@@ -54,7 +54,7 @@ class PirSensor(Sensor):
         current_is_detected = IS_DETECTED
         self.notify(self.current_datas.copy())
       exec_time += INTERVAL_SECONDS
-      time.sleep(exec_time - time.time())
+      time.sleep(min(exec_time - time.time(), 0))
   
   def is_detected(self):
     return GPIO.input(self.gpio) == 1
